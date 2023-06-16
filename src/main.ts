@@ -55,6 +55,10 @@ const commands = [
     description: 'Replies with an image from the ones it has learned COULD BE NSFW!'
   },
   {
+    name: 'video',
+    description: 'Replies with an video/youtube link from the ones it has learned COULD BE NSFW!'
+  },
+  {
     name: 'providetraining',
     description: 'Memorizes all the messages of the SERVER and uses them as training data',
   },
@@ -95,7 +99,6 @@ client.on('ready', () => {
       console.log(`No previous data found for guild:${guild.name}`);
     //dataRetriever.fetchAndStoreAllMessagesInGuild(guild)
 
-
   })
   console.log(`Started ${chainsMap.size} Chains`);
 
@@ -106,7 +109,6 @@ client.on('guildCreate', (guild: Guild) => {
   console.log(`Joined a new guild: ${guild.name} (ID: ${guild.id})`);
   console.log('Guild member count:', guild.memberCount);
   console.log('Guild owner:', guild.members.cache.get(guild.ownerId));
-  console.log('Guild channels:', guild.channels.cache);
 
 });
 client.on('interactionCreate', async function (interaction: ChatInputCommandInteraction) {
@@ -136,7 +138,7 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
 
   if (interaction.commandName === 'providetraining') {
     if (!dataRetriever.fileManager.guildHasPreviousData(interaction.guild.id)) {
-      interaction.reply(`<@${interaction.user.id}> Started Fetching messages.\nWill send another message when i'm done\nEstimated Time: \`1 Minute per every 4000 Messages in the Server\``)
+      interaction.reply(`<@${interaction.user.id}> Started Fetching messages.\nWill send another message when i'm done\nEstimated Time: \`1 Minute per every 4000 Messages in the Server\`\nThis might take a while...`)
       const start = Date.now();
       await dataRetriever.fetchAndStoreAllMessagesInGuild(interaction.guild).then(() => {
         const runtime = new Date(Date.now() - start);
@@ -170,7 +172,9 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
   if (interaction.commandName === 'image') {
     await interaction.reply(chainsMap.get(interaction.guild.id).getImage())
   }
-
+  if (interaction.commandName === 'video') {
+    await interaction.reply(chainsMap.get(interaction.guild.id).getVideo())
+  }
 });
 
 client.on('messageCreate', async (msg: Message) => {

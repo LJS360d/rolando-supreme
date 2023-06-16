@@ -15,11 +15,13 @@ export class MarkovChain {
     public replyRate: number;
     gifs: string[];
     images: string[];
+    videos: string[];
     constructor() {
         this.state = {};
         this.replyRate = 10
         this.gifs = [];
         this.images = [];
+        this.videos = [];
     }
 
     provideData(messages: string[]): void {
@@ -34,6 +36,10 @@ export class MarkovChain {
                 this.gifs.push(message);
             if (message.endsWith('.png') || message.endsWith('.jpeg') || message.endsWith('.jpg'))
                 this.images.push(message);
+            if (message.endsWith('.mp4') || isValidYoutubeUrl(message))
+                this.videos.push(message);
+
+
         }
         const words = message.split(' ');
 
@@ -164,4 +170,18 @@ export class MarkovChain {
         return "I got no images in my brain";
     }
 
+    getVideo(): string {
+        if (this.videos.length > 0) {
+            const randomIndex = Math.floor(Math.random() * this.videos.length) + 1;
+            return this.videos.at(randomIndex)!;
+        }
+        return "I got no videos in my brain";
+    }
+
 }
+
+function isValidYoutubeUrl(url: string): boolean {
+    const regExp = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
+    return regExp.test(url);
+}
+
