@@ -7,6 +7,10 @@ built with:
 [`webpack`](https://webpack.js.org)
 currently hosted on:
 [`replit`](https://replit.com)
+
+The whole concept is based on [`Fioriktos`](https://github.com/FiorixF1/fioriktos-bot)<br>
+A very similar `Telegram` bot that was written in `Python`
+
 # How it works:
 A Markov chain is a mathematical model that describes a sequence of events in which the probability of each event depends only on the state of the previous event. In other words, it is a stochastic process that moves from one state to another based on a set of probabilities. The chain can be discrete-time or continuous-time, depending on whether the state changes occur at discrete or continuous intervals.<br>
 **TL;DR**<br>
