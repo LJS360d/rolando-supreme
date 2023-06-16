@@ -1,4 +1,8 @@
-import { WordTokenizer } from 'natural';
+/**
+ * `key`: Guild ID 
+ * `value`: new MarkovChain
+ */
+export const chainsMap = new Map<string, MarkovChain>();
 
 interface MarkovState {
     [key: string]: {
@@ -8,15 +12,14 @@ interface MarkovState {
 
 export class MarkovChain {
     public state: MarkovState;
-    tokenizer: WordTokenizer;
-
+    public replyRate: number;
+    gifs: string[];
+    images: string[];
     constructor() {
         this.state = {};
-        this.tokenizer = new WordTokenizer({
-            discardEmpty: true,
-            pattern: /[\w']+/g
-        })
-        
+        this.replyRate = 10
+        this.gifs = [];
+        this.images = [];
     }
 
     provideData(messages: string[]): void {
@@ -26,7 +29,14 @@ export class MarkovChain {
     }
 
     updateState(message: string): void {
-        const words = this.tokenizer.tokenize(message) ;
+        if (message.startsWith('https:')) {
+            if (message.endsWith('.gif'))
+                this.gifs.push(message);
+            if (message.endsWith('.png') || message.endsWith('.jpeg') || message.endsWith('.jpg'))
+                this.images.push(message);
+        }
+        const words = message.split(' ');
+
         for (let i = 0; i < words.length - 1; i++) {
             const currentWord = words[i];
             const nextWord = words[i + 1];
@@ -77,4 +87,81 @@ export class MarkovChain {
 
         return options[options.length - 1];
     }
+
+    getWordsByValue(value: number): string[] {
+        const valuedWords: string[] = [];
+        const invertedIndex: { [value: number]: string[] } = {};
+
+        // Build the inverted index
+        for (const currentWord in this.state) {
+            const nextWords = this.state[currentWord];
+            for (const nextWord in nextWords) {
+                const wordValue = nextWords[nextWord];
+                if (!invertedIndex[wordValue]) {
+                    invertedIndex[wordValue] = [];
+                }
+                invertedIndex[wordValue].push(nextWord);
+            }
+        }
+
+        // Retrieve words with the specified value from the inverted index
+        if (invertedIndex[value]) {
+            valuedWords.push(...invertedIndex[value]);
+        }
+
+        return valuedWords;
+    }
+
+    getWordsHigherThanValue(value: number): string[] {
+        const valuedWords: string[] = [];
+
+        for (const currentWord in this.state) {
+            const nextWords = this.state[currentWord];
+            for (const nextWord in nextWords) {
+                const wordValue = nextWords[nextWord];
+                if (wordValue > value) {
+                    valuedWords.push(nextWord);
+                }
+            }
+        }
+        return valuedWords;
+    }
+
+    getComplexity(): number {
+        const USE_THRESHOLD = 15
+        const stateSize = Object.keys(this.state).length;
+        let highValueWords = 0;
+
+        for (const currentWord in this.state) {
+            const nextWords = this.state[currentWord];
+            for (const nextWord in nextWords) {
+                const wordValue = nextWords[nextWord];
+                if (wordValue > USE_THRESHOLD) { // Adjust the threshold for what is considered a "high-value" word
+                    highValueWords++;
+                }
+            }
+        }
+        // Calculate the complexity score based on state size and high-value words
+        const complexityScore = stateSize + highValueWords;
+
+        return complexityScore;
+
+    }
+
+    getGif(): string {
+        if (this.gifs.length > 0) {
+            const randomIndex = Math.floor(Math.random() * this.gifs.length) + 1;
+            return this.gifs.at(randomIndex)!;
+        }
+        return "I got no gifs in my brain";
+    }
+
+    getImage(): string {
+        if (this.images.length > 0) {
+            const randomIndex = Math.floor(Math.random() * this.images.length) + 1;
+            return this.images.at(randomIndex)!;
+        }
+        return "I got no images in my brain";
+    }
+
 }

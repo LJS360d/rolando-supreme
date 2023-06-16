@@ -1,6 +1,6 @@
 {
   "name": "rolando",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
   "private": "true",
   "type": "commonjs",
@@ -8,7 +8,7 @@
     "test": "ts-node-dev ./src/tests/test.ts",
     "dev": "ts-node-dev ./src/main.ts",
     "start": "ts-node --esm ./src/main.ts",
-    "build": "webpack --config webpack.config.js --mode development"
+    "build": "webpack --config webpack.config.js --mode production"
   },
   "keywords": [],
   "author": "",
@@ -28,7 +28,6 @@
     "dotenv": "^16.0.3",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
-    "natural": "^6.5.0",
     "ts-loader": "^9.4.3"
   }
 }

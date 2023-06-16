@@ -1,19 +1,20 @@
 import {
+  ChatInputCommandInteraction,
   Client,
   GatewayIntentBits,
   Guild,
   Message,
 } from 'discord.js';
 
+import { startAdminServer } from './AdminServer';
+import { DataRetriever } from './DataRetriever';
 import {
-  DATA_FOLDER,
-  fetchAllMessages,
-  readMessagesFromFile,
-} from './FileManager';
-import { MarkovChain } from './MarkovChain';
+  chainsMap,
+  MarkovChain,
+} from './MarkovChain';
 
 // Import dotenv to load environment variables from .env file
-require('dotenv').config();
+// require('dotenv').config();
 const TOKEN = process.env['TOKEN'];
 const options = {
   intents: [
@@ -33,12 +34,9 @@ const options = {
   ],
 }
 
-const client = new Client(options);
-const markov = new MarkovChain()
-if (Object.keys(markov.state).length == 0) {
-  markov.provideData(readMessagesFromFile(DATA_FOLDER + '794730472395112491.dt'))
-}
-let RATE = 10;
+export const client = new Client(options);
+const dataRetriever = new DataRetriever()
+
 const commands = [
   {
     name: 'irlfact',
@@ -49,8 +47,16 @@ const commands = [
     description: 'Replies with a random cat fact'
   },
   {
+    name: 'gif',
+    description: 'Replies with a gif from the ones it has learned COULD BE NSFW!'
+  },
+  {
+    name: 'image',
+    description: 'Replies with an image from the ones it has learned COULD BE NSFW!'
+  },
+  {
     name: 'providetraining',
-    description: 'memorizes all the chat messages of the channel',
+    description: 'Memorizes all the messages of the SERVER and uses them as training data',
   },
   {
     name: 'setreplyrate',
@@ -58,7 +64,7 @@ const commands = [
     options: [
       {
         name: 'rate',
-        description: "Probability of 1/rate (if you put 0 it will always reply)",
+        description: "Probability of 1/rate | 1=always reply | 0=never reply unless pinged",
         type: 4,
         required: true,
       }
@@ -71,22 +77,39 @@ async function refreshCommands(): Promise<void> {
     await client.application?.commands.set(commands);
   } catch (error) { console.error(error) }
 }
+
 client.on('ready', () => {
   refreshCommands().then(() => { console.log('Successfully reloaded application (/) commands.') })
   console.log(`Logged in as ${client.user!.tag}!`);
   const guilds = client.guilds.cache
-  console.log(`Currently part of ${guilds.size} guilds`);
-  console.log(`Guilds: ${guilds.map(guild => guild.name).join(', ')}`);
-  
-  
+  guilds.forEach((guild: Guild) => {
+    chainsMap.set(guild.id, new MarkovChain())
+    const previousData = dataRetriever.fileManager.getPreviousTrainingDataForGuild(guild.id)
+    if (previousData !== null) {
+      console.log(`Loading previous data for guild:${guild.name}`);
+      //load data into markovchain
+      chainsMap.get(guild.id)?.provideData(previousData)
+      console.log(`Loaded ${previousData.length} messages into MarkovChain for guild:${guild.name}`);
+
+    } else
+      console.log(`No previous data found for guild:${guild.name}`);
+    //dataRetriever.fetchAndStoreAllMessagesInGuild(guild)
+
+
+  })
+  console.log(`Started ${chainsMap.size} Chains`);
+
 });
+
 client.on('guildCreate', (guild: Guild) => {
+  chainsMap.set(guild.id, new MarkovChain())
   console.log(`Joined a new guild: ${guild.name} (ID: ${guild.id})`);
   console.log('Guild member count:', guild.memberCount);
   console.log('Guild owner:', guild.members.cache.get(guild.ownerId));
   console.log('Guild channels:', guild.channels.cache);
+
 });
-client.on('interactionCreate', async function (interaction: any) {
+client.on('interactionCreate', async function (interaction: ChatInputCommandInteraction) {
   if (interaction.commandName === 'irlfact') {
     (await fetch('https://uselessfacts.jsph.pl/api/v2/facts/random', {
       headers: { 'Accept': 'application/json' }
@@ -112,46 +135,95 @@ client.on('interactionCreate', async function (interaction: any) {
   }
 
   if (interaction.commandName === 'providetraining') {
-    interaction.reply('Fetching messages.\nWill send another message when i\'m done\nEstimated Time: `10 minutes`')
-    const start = Date.now();
-    fetchAllMessages(interaction.channel, DATA_FOLDER + interaction.channel.id + ".dt").then((messages: string[]) => {
-      markov.provideData(messages)
-      const runtime = new Date(Date.now() - start);
-      const minutes = runtime.getMinutes();
-      const seconds = runtime.getSeconds();
-      const formattedTime = `${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
-      interaction.channel.send(`Finished Fetching training data!\nTime Passed:\`${formattedTime}\``)
-    }).then(async () => {
-      console.log("Finished Saving training data");
-    })
+    if (!dataRetriever.fileManager.guildHasPreviousData(interaction.guild.id)) {
+      interaction.reply(`<@${interaction.user.id}> Started Fetching messages.\nWill send another message when i'm done\nEstimated Time: \`1 Minute per every 4000 Messages in the Server\``)
+      const start = Date.now();
+      await dataRetriever.fetchAndStoreAllMessagesInGuild(interaction.guild).then(() => {
+        const runtime = new Date(Date.now() - start);
+        const formattedTime = `${runtime.getMinutes()}m ${runtime.getSeconds()}s`;
+        interaction.channel.send(`<@${interaction.user.id}> Finished Fetching training data!\nTime Passed:\`${formattedTime}\``)
+        chainsMap.get(interaction.guild.id)
+          .provideData(dataRetriever.fileManager
+            .getPreviousTrainingDataForGuild(interaction.guild.id))
+      })
+    } else {
+      await interaction.reply(`I already have training data for this server`)
+    }
   }
 
   if (interaction.commandName === 'setreplyrate') {
-    RATE = interaction.options.getInteger('rate')
-    if (RATE > 0)
-      await interaction.reply(`Set reply rate to ${RATE}`)
-    else
-      await interaction.reply(`Chaos Insues.`)
+    const chain = chainsMap.get(interaction.guildId)
+    if (!chain) return
+    chain.replyRate = interaction.options.getInteger('rate')
 
+    if (chain.replyRate > 1)
+      await interaction.reply(`Set reply rate to ${chain.replyRate}`)
+    if (chain.replyRate === 1)
+      await interaction.reply(`Ok i will always reply`)
+    if (chain.replyRate === 0)
+      await interaction.reply(`Ok i won't reply to anybody`)
+  }
+
+  if (interaction.commandName === 'gif') {
+    await interaction.reply(chainsMap.get(interaction.guild.id).getGif())
+  }
+  if (interaction.commandName === 'image') {
+    await interaction.reply(chainsMap.get(interaction.guild.id).getImage())
   }
 
 });
 
 client.on('messageCreate', async (msg: Message) => {
-  markov.updateState(msg.content)
-
+  const guildId = msg.guild.id
+  const chain = chainsMap.get(guildId)!
+  const cleanedMsg = msg.content.replace(`<@${client.user!.id}>`, "").toLowerCase();
+  chain.updateState(cleanedMsg)
   const pingCondition = (msg.content.includes(`<@${client.user!.id}>`))
-  const randomRate = (Math.floor(Math.random() * RATE) + 1 === 1)
+  const randomRate: boolean = (chain.replyRate === 1) ? true :
+    chain.replyRate === 0 ? false :
+      ((Math.floor(Math.random() * chain.replyRate) + 1 === 1));
+
   if ((pingCondition || randomRate) && (msg.author !== client.user)) {
 
-    const cleanedMsg = msg.content.replace(`<@${client.user!.id}>`, client.user.username);
     const words = cleanedMsg.split(' ')
-    const random = Math.floor(Math.random() * words.length)
-    const randomWord = words[Math.floor(Math.random() * words.length)];
-    const reply = markov.generateText(randomWord, Math.ceil(random * 3) + 10)
+
+    const random = Math.floor(Math.random() * words.length + 5) + 1
+    const randomWord = words.at(random);
+    const randomStateWord = chain.getWordsByValue(Math.ceil(random) * random)
+
+    const reply = chain.generateText(randomStateWord[0] ?? randomWord, Math.ceil(random * 3) + 1)
 
     if (reply)
       await msg.channel.send(reply)
   }
 })
 client.login(TOKEN);
+startAdminServer()
+
+process.on('SIGINT', async () => {
+  console.log('Received SIGINT signal. Shutting down gracefully...');
+  // Perform any necessary cleanup operations here
+
+  process.exit(0)  
+});
+
+process.on('SIGTERM', async () => {
+  console.log('Received SIGTERM signal. Shutting down gracefully...');
+  // Perform any necessary cleanup operations here
+  process.exit(0) 
+});
+
+/* async function sendShutdownNotif() {
+  const axios = require("axios");
+  const webhook = process.env['WEBHOOK']
+  return new Promise((resolve, reject) => {
+    axios.post(webhook, { content: "Rolando Has Shut down", username: "Rolando" })
+      .then(() => {
+        resolve(0)
+      })
+      .catch((err: Error) => {
+        console.error(err)
+        reject(1)
+      })
+  })
+}*/

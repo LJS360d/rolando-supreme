@@ -1,28 +1,42 @@
-import { Message } from 'discord.js';
 import {
   appendFileSync,
   close,
   open,
   PathLike,
   readFileSync,
+  statSync,
   write,
 } from 'fs';
 
-export const DATA_FOLDER = './train_data/';
-export function appendMessagesToFile(messages:string[],filePath:PathLike) {
+const DATA_FOLDER: PathLike = './train_data/';
+
+export class FileManager {
+  constructor() {
+
+  }
+
+  getPreviousTrainingDataForGuild(guildId: string): string[] | null {
+    //check if file guildId.dt exists
+    if (this.fileExists(`${DATA_FOLDER}${guildId}.dt`))
+      return this.readMessagesFromFile(guildId);
+    else return null;
+
+  }
+
+  appendMessagesToFileNoDuplicates(messages: string[], filePath: PathLike) {
     const uniqueMessages = new Set(messages);
-  
+
     open(filePath, 'a', (err, fd) => {
       if (err) {
         console.error(`Error opening file: ${err}`);
       } else {
         let linesWritten = 0;
-  
+
         const writeNextLine = () => {
           if (linesWritten < uniqueMessages.size) {
             const message = Array.from(uniqueMessages)[linesWritten];
             const line = message + '\n';
-  
+
             write(fd, line, (writeErr) => {
               if (writeErr) {
                 console.error(`Error writing to file: ${writeErr}`);
@@ -41,66 +55,38 @@ export function appendMessagesToFile(messages:string[],filePath:PathLike) {
             });
           }
         };
-  
+
         writeNextLine(); // Start writing lines recursively
       }
     });
   }
-export function appendMessageToFile(message: string, filePath: PathLike): void {
-    appendFileSync(filePath, message + "\n");
-}
 
-export function readMessagesFromFile(filePath: PathLike): string[] {
-  try {
-    const fileContent: string = readFileSync(filePath, 'utf-8');
-    const lines: string[] = fileContent.split('\n');
-
-    console.log(`Lines read: ${lines.length}`);
-
-    return lines;
-  } catch (error) {
-    console.error(`Error reading file: ${error}`);
-    return [];
+  appendMessageToFile(msg: string, fileName: string): void {
+    const cleanedMsg = msg.toLowerCase();
+    appendFileSync(`${DATA_FOLDER}${fileName}.dt`, cleanedMsg + "\n");
   }
-}
 
-export async function fetchAllMessages(channel: any, filePath: PathLike): Promise<string[]> {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const messageLimit = 100000;
-            const messages: string[] = [];
-            let lastMessageID: string | undefined | null = null;
-            let remaining = true;
+  readMessagesFromFile(fileName: PathLike): string[] {
+    try {
+      const fileContent: string = readFileSync(`${DATA_FOLDER}${fileName}.dt`, 'utf-8');
+      const lines: string[] = fileContent.split('\n');
+      return lines;
+    } catch (error) {
+      console.error(`Error reading file: ${error}`);
+      return [];
+    }
+  }
 
-            while (remaining && messages.length < messageLimit) {
-                // Fetch a batch of messages
-                const messageBatch: Message[] = await channel.messages.fetch({ limit: 100, before: lastMessageID });
+  private fileExists(filePath: PathLike): boolean {
+    try {
+      return statSync(filePath).isFile();
+    } catch (error) {
+      return false;
+    }
+  }
 
-                if (lastMessageID === undefined) {
-                    // No more messages remaining
-                    remaining = false;
-                    continue;
-                }
-
-                // Add messages to the array
-                messageBatch.forEach((msg: any) => {
-                    const authorAndContent = `${msg.content}`;
-                    if (!messages.includes(authorAndContent)) {
-                        messages.push(authorAndContent);
-                        appendMessageToFile(authorAndContent, filePath)
-                    }
-                });
-
-                // Update the last message ID for the next batch
-                lastMessageID = messageBatch.at(-1)?.id;
-                console.log("Fetched Messages:" + messages.length);
-
-            }
-            resolve(messages);
-        } catch (error) {
-            console.error(`Error fetching messages: ${error}`);
-            reject(`Error fetching messages: ${error}`);
-        }
-    });
+  guildHasPreviousData(guildId: string): boolean {
+    return this.fileExists(`${DATA_FOLDER}${guildId}.dt`);
+  }
 }
 
