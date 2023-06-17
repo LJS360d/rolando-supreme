@@ -38,7 +38,7 @@ export class MarkovChain {
                 this.gifs.push(message);
             if (message.endsWith('.png') || message.endsWith('.jpeg') || message.endsWith('.jpg'))
                 this.images.push(message);
-            if (message.endsWith('.mp4') || isValidYoutubeUrl(message))
+            if (message.endsWith('.mp4') || message.endsWith('.mov'))
                 this.videos.push(message);
 
         }
@@ -180,7 +180,7 @@ export class MarkovChain {
                 return imageURL; // Valid URL
             } else {
                 // Remove invalid URL from array and try again1
-                this.images.splice(randomIndex, 1); 
+                this.images.splice(randomIndex, 1);
             }
         }
 
@@ -204,10 +204,6 @@ export class MarkovChain {
 
 }
 
-function isValidYoutubeUrl(url: string): boolean {
-    const regExp = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
-    return regExp.test(url);
-}
 
 async function validateURL(url: string): Promise<boolean> {
     try {

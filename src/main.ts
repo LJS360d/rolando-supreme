@@ -14,7 +14,7 @@ import {
 } from './MarkovChain';
 
 // Import dotenv to load environment variables from .env file
-require('dotenv').config();
+//require('dotenv').config();
 const TOKEN = process.env['TOKEN'];
 const options = {
   intents: [
@@ -63,13 +63,17 @@ const commands = [
     description: 'Memorizes all the messages of the SERVER and uses them as training data',
   },
   {
+    name: 'replyrate',
+    description: 'Shows the current reply rate',
+  },
+  {
     name: 'setreplyrate',
     description: 'Sets the rate at which the bot will reply',
     options: [
       {
         name: 'rate',
         description: "Probability of 1/rate | 1=always reply | 0=never reply unless pinged",
-        type: 4,
+        type: 4, //Integer type
         required: true,
       }
     ]
@@ -166,7 +170,13 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
       await interaction.reply(`Ok i won't reply to anybody`)
   }
 
-  if (interaction.commandName === 'gif') {    
+  if (interaction.commandName === 'replyrate') {
+    const chain = chainsMap.get(interaction.guildId)
+    if (!chain) return
+    await interaction.reply(`The reply rate is currently set to ${chain.replyRate}\nUse \`/setreplyrate\` to change it`) 
+  }
+
+  if (interaction.commandName === 'gif') {
     await interaction.reply(await chainsMap.get(interaction.guild.id).getGif())
   }
   if (interaction.commandName === 'image') {
@@ -179,8 +189,9 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
 
 client.on('messageCreate', async (msg: Message) => {
   const guildId = msg.guild.id
-  const chain = chainsMap.get(guildId)!  
-  const cleanedMsg = msg.content.replace(`<@${client.user!.id}>`, "").toLowerCase();
+  const chain = chainsMap.get(guildId)!
+  const cleanedMsg = msg.content.replace(`<@${client.user!.id}>`, "rolando").toLowerCase();
+  dataRetriever.fileManager.appendMessageToFile(cleanedMsg, guildId)
   chain.updateState(cleanedMsg)
   const pingCondition = (msg.content.includes(`<@${client.user!.id}>`))
   const randomRate: boolean = (chain.replyRate === 1) ? true :
@@ -195,7 +206,7 @@ client.on('messageCreate', async (msg: Message) => {
     const randomWord = words.at(random);
     const randomStateWord = chain.getWordsByValue(Math.ceil(random) * random)
 
-    const reply = chain.generateText(randomStateWord[0] ?? randomWord, Math.ceil(random * 3) + 1)
+    const reply = chain.generateText(randomStateWord[0] ?? randomWord, Math.ceil(random * 2) + 1)
 
     if (reply)
       await msg.channel.send(reply)
@@ -208,13 +219,13 @@ process.on('SIGINT', async () => {
   console.log('Received SIGINT signal. Shutting down gracefully...');
   // Perform any necessary cleanup operations here
 
-  process.exit(0)  
+  process.exit(0)
 });
 
 process.on('SIGTERM', async () => {
   console.log('Received SIGTERM signal. Shutting down gracefully...');
   // Perform any necessary cleanup operations here
-  process.exit(0) 
+  process.exit(0)
 });
 
 /* async function sendShutdownNotif() {
