@@ -15,7 +15,7 @@ import {
 } from './MarkovChain';
 
 // Import dotenv to load environment variables from .env file
-//require('dotenv').config();
+require('dotenv').config();
 const TOKEN = process.env['TOKEN'];
 const options = {
   intents: [
@@ -141,9 +141,9 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
 client.on('messageCreate', async (msg: Message) => {
   const guildId = msg.guild.id
   const chain = chainsMap.get(guildId)!
-  const cleanedMsg = msg.content.replace(`<@${client.user!.id}>`, "rolando").toLowerCase();
-  dataRetriever.fileManager.appendMessageToFile(cleanedMsg, guildId)
-  chain.updateState(cleanedMsg)
+  dataRetriever.fileManager.appendMessageToFile(msg.content, guildId)
+  chain.updateState(msg.content)
+  
   const pingCondition = (msg.content.includes(`<@${client.user!.id}>`))
   const randomRate: boolean = (chain.replyRate === 1) ? true :
     chain.replyRate === 0 ? false :
@@ -151,13 +151,9 @@ client.on('messageCreate', async (msg: Message) => {
 
   if ((pingCondition || randomRate) && (msg.author !== client.user)) {
 
-    const words = cleanedMsg.split(' ')
+    const random = Math.floor(Math.random() * msg.content.split(' ').length + 5) + 1
 
-    const random = Math.floor(Math.random() * words.length + 5) + 1
-    const randomWord = words.at(random);
-    const randomStateWord = chain.getWordsByValue(Math.ceil(random) * random)
-
-    const reply = chain.generateText(randomStateWord[0] ?? randomWord, Math.ceil(random * 2) + 1)
+    const reply = chain.talk(Math.floor(random * 3) + 1)
 
     if (reply)
       await msg.channel.send(reply)

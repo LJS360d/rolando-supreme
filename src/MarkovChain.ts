@@ -155,7 +155,6 @@ export class MarkovChain {
 
     }
 
-
     async getGif(): Promise<string> {
         while (this.gifs.length > 0) {
             const randomIndex = Math.floor(Math.random() * this.gifs.length);
@@ -200,6 +199,17 @@ export class MarkovChain {
         }
 
         return "I got no videos in my brain"; // No valid URLs found
+    }
+
+    talk(length: number): string {
+        const keys = Object.keys(this.state);
+        const randomIndex = Math.floor(Math.random() * keys.length);
+        const starterWord = keys[randomIndex];
+        return this.filter(this.generateText(starterWord, length));
+    }
+
+    private filter(text: string): string {
+        return text.replace(/\\n/g, '').trim();
     }
 
 }
