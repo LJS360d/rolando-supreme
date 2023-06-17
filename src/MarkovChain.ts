@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 /**
  * `key`: Guild ID 
  * `value`: new MarkovChain
@@ -38,7 +40,6 @@ export class MarkovChain {
                 this.images.push(message);
             if (message.endsWith('.mp4') || isValidYoutubeUrl(message))
                 this.videos.push(message);
-
 
         }
         const words = message.split(' ');
@@ -154,28 +155,51 @@ export class MarkovChain {
 
     }
 
-    getGif(): string {
-        if (this.gifs.length > 0) {
-            const randomIndex = Math.floor(Math.random() * this.gifs.length) + 1;
-            return this.gifs.at(randomIndex)!;
+
+    async getGif(): Promise<string> {
+        while (this.gifs.length > 0) {
+            const randomIndex = Math.floor(Math.random() * this.gifs.length);
+            const gifURL = this.gifs[randomIndex];
+
+            if (await validateURL(gifURL)) {
+                return gifURL; // Valid URL
+            } else {
+                this.gifs.splice(randomIndex, 1); // Remove invalid URL from array
+            }
         }
-        return "I got no gifs in my brain";
+
+        return "I got no gifs in my brain"; // No valid URLs found
     }
 
-    getImage(): string {
-        if (this.images.length > 0) {
-            const randomIndex = Math.floor(Math.random() * this.images.length) + 1;
-            return this.images.at(randomIndex)!;
+    async getImage(): Promise<string> {
+        while (this.images.length > 0) {
+            const randomIndex = Math.floor(Math.random() * this.images.length);
+            const imageURL = this.images[randomIndex];
+
+            if (await validateURL(imageURL)) {
+                return imageURL; // Valid URL
+            } else {
+                // Remove invalid URL from array and try again1
+                this.images.splice(randomIndex, 1); 
+            }
         }
-        return "I got no images in my brain";
+
+        return "I got no images in my brain"; // No valid URLs found
     }
 
-    getVideo(): string {
-        if (this.videos.length > 0) {
-            const randomIndex = Math.floor(Math.random() * this.videos.length) + 1;
-            return this.videos.at(randomIndex)!;
+    async getVideo(): Promise<string> {
+        while (this.videos.length > 0) {
+            const randomIndex = Math.floor(Math.random() * this.videos.length);
+            const videoURL = this.videos[randomIndex];
+
+            if (await validateURL(videoURL)) {
+                return videoURL; // Valid URL
+            } else {
+                this.videos.splice(randomIndex, 1); // Remove invalid URL from array
+            }
         }
-        return "I got no videos in my brain";
+
+        return "I got no videos in my brain"; // No valid URLs found
     }
 
 }
@@ -185,3 +209,11 @@ function isValidYoutubeUrl(url: string): boolean {
     return regExp.test(url);
 }
 
+async function validateURL(url: string): Promise<boolean> {
+    try {
+        const response = await axios.get(url);
+        return response.status === 200; // Valid if status code is 200
+    } catch (error) {
+        return false; // Invalid URL or request error
+    }
+}

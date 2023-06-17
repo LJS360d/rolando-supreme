@@ -14,7 +14,7 @@ import {
 } from './MarkovChain';
 
 // Import dotenv to load environment variables from .env file
-// require('dotenv').config();
+require('dotenv').config();
 const TOKEN = process.env['TOKEN'];
 const options = {
   intents: [
@@ -166,20 +166,20 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
       await interaction.reply(`Ok i won't reply to anybody`)
   }
 
-  if (interaction.commandName === 'gif') {
-    await interaction.reply(chainsMap.get(interaction.guild.id).getGif())
+  if (interaction.commandName === 'gif') {    
+    await interaction.reply(await chainsMap.get(interaction.guild.id).getGif())
   }
   if (interaction.commandName === 'image') {
-    await interaction.reply(chainsMap.get(interaction.guild.id).getImage())
+    await interaction.reply(await chainsMap.get(interaction.guild.id).getImage())
   }
   if (interaction.commandName === 'video') {
-    await interaction.reply(chainsMap.get(interaction.guild.id).getVideo())
+    await interaction.reply(await chainsMap.get(interaction.guild.id).getVideo())
   }
 });
 
 client.on('messageCreate', async (msg: Message) => {
   const guildId = msg.guild.id
-  const chain = chainsMap.get(guildId)!
+  const chain = chainsMap.get(guildId)!  
   const cleanedMsg = msg.content.replace(`<@${client.user!.id}>`, "").toLowerCase();
   chain.updateState(cleanedMsg)
   const pingCondition = (msg.content.includes(`<@${client.user!.id}>`))
