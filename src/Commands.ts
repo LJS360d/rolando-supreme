@@ -24,6 +24,10 @@ export const commands = [
       description: 'Memorizes all the messages of the SERVER and uses them as training data',
     },
     {
+      name: 'resettraining',
+      description: 'Deletes all memorized messages, will make me learn from new messages only',
+    },
+    {
       name: 'replyrate',
       description: 'Shows the current reply rate',
     },

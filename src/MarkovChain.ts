@@ -18,6 +18,7 @@ export class MarkovChain {
     gifs: string[];
     images: string[];
     videos: string[];
+    
     constructor() {
         this.state = {};
         this.replyRate = 10

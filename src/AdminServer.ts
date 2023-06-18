@@ -11,13 +11,7 @@ export function startAdminServer() {
     const app: express.Application = express();
     const httpServer: http.Server = http.createServer(app);
     app.set('view engine', 'ejs');
-    app.use(express.static('public', {
-        setHeaders: (res, path) => {
-            if (path.endsWith('.css')) {
-                res.setHeader('Content-Type', 'text/css');
-            }
-        }
-    }));
+
     app.get('/', (req: Request, res: Response) => {
         const props = {
             client: client,

@@ -1,4 +1,5 @@
 import {
+  ButtonInteraction,
   ChatInputCommandInteraction,
   Client,
   GatewayIntentBits,
@@ -9,6 +10,7 @@ import {
 import { startAdminServer } from './AdminServer';
 import { commands } from './Commands';
 import { DataRetriever } from './DataRetriever';
+import { InteractionManager } from './InteractionManager';
 import {
   chainsMap,
   MarkovChain,
@@ -36,7 +38,7 @@ const options = {
 }
 
 export const client = new Client(options);
-const dataRetriever = new DataRetriever()
+export const dataRetriever = new DataRetriever()
 
 client.on('ready', () => {
   refreshCommands().then(() => { console.log('Successfully reloaded application (/) commands.') })
@@ -66,97 +68,97 @@ client.on('ready', () => {
 })
 client.on('guildCreate', (guild: Guild) => {
   chainsMap.set(guild.id, new MarkovChain())
-  guild.systemChannel.send(`Sup, i'm Rolando. \nRun \`/providetraining\` to actually make me do stuff.\nThe more messages there are in the server, the more it will make me intelligent.`)
+  guild.systemChannel.send(`Sup, i'm Rolando. \nRun \`/providetraining\` to actually make me do stuff.\nThe more messages there are in the server, the more it will make me _intelligent_.`)
 })
 client.on('interactionCreate', async function (interaction: ChatInputCommandInteraction) {
   const chain = chainsMap.get(interaction.guildId);
-  switch (interaction.commandName) {
-    case 'irlfact':
-      (await fetch('https://uselessfacts.jsph.pl/api/v2/facts/random', {
-        headers: { 'Accept': 'application/json' }
-      })).json().then(async res => {
-        await interaction.reply(res.text);
-      }).catch(error => {
-        console.error(error);
-      });
-      break;
+  if (!chain) return;
+  if (interaction.isChatInputCommand())
+    switch (interaction.commandName) {
+      case 'irlfact':
+        InteractionManager.irlFact(interaction)
+        break;
 
-    case 'catfact':
-      (await fetch('https://meowfacts.herokuapp.com/', {
-        headers: { 'Accept': 'application/json' }
-      })).json().then(async res => {
-        await interaction.reply(res.data[0]);
-      }).catch(error => {
-        console.error(error);
-      });
-      break;
+      case 'catfact':
+        InteractionManager.catFact(interaction)
+        break;
 
-    case 'providetraining':
-      if (!dataRetriever.fileManager.guildHasPreviousData(interaction.guild.id)) {
-        interaction.reply(`<@${interaction.user.id}> Started Fetching messages.\nWill send another message when I'm done\nEstimated Time: \`1 Minute per every 4000 Messages in the Server\`\nThis might take a while...`);
-        const start = Date.now();
-        await dataRetriever.fetchAndStoreAllMessagesInGuild(interaction.guild).then(() => {
-          const runtime = new Date(Date.now() - start);
-          const formattedTime = `${runtime.getMinutes()}m ${runtime.getSeconds()}s`;
-          interaction.channel.send(`<@${interaction.user.id}> Finished Fetching training data!\nTime Passed:\`${formattedTime}\``);
-          chainsMap.get(interaction.guild.id).provideData(dataRetriever.fileManager.getPreviousTrainingDataForGuild(interaction.guild.id));
-        });
-      } else {
-        await interaction.reply(`I already have training data for this server`);
-      }
-      break;
+      case 'providetraining':
+        InteractionManager.provideTraining(interaction)
+        break;
 
-    case 'setreplyrate':
-      if (!chain) return;
-      chain.replyRate = interaction.options.getInteger('rate');
+      case "resettraining":
+        InteractionManager.resetTraining(interaction)
+        break;
 
-      if (chain.replyRate > 1) {
-        await interaction.reply(`Set reply rate to ${chain.replyRate}`);
-      } else if (chain.replyRate === 1) {
-        await interaction.reply(`Ok, I will always reply`);
-      } else if (chain.replyRate === 0) {
-        await interaction.reply(`Ok, I won't reply to anybody`);
-      }
-      break;
+      case 'setreplyrate':
+        chain.replyRate = interaction.options.getInteger('rate');
+        const reply = (chain.replyRate === 0) ? `Ok, I won't reply to anybody` :
+          (chain.replyRate === 1) ? `Ok, I will always reply` : `Set reply rate to ${chain.replyRate}`
 
-    case 'replyrate':
-      if (!chain) return;
-      await interaction.reply(`The reply rate is currently set to ${chain.replyRate}\nUse \`/setreplyrate\` to change it`);
-      break;
+        await interaction.reply({ content: reply });
+        break;
 
-    case 'gif':
-      await interaction.reply(await chain.getGif());
-      break;
+      case 'replyrate':
+        await interaction.reply(`The reply rate is currently set to ${chain.replyRate}\nUse \`/setreplyrate\` to change it`);
+        break;
 
-    case 'image':
-      await interaction.reply(await chain.getImage());
-      break;
+      case 'gif':
+        await interaction.reply(await chain.getGif());
+        break;
 
-    case 'video':
-      await interaction.reply(await chain.getVideo());
-      break;
-  }
+      case 'image':
+        await interaction.reply(await chain.getImage());
+        break;
+
+      case 'video':
+        await interaction.reply(await chain.getVideo());
+        break;
+
+    }
+
 });
 
+client.on('interactionCreate', async function (interaction: ButtonInteraction) {
+  if (interaction.isButton())
+    switch (interaction.customId) {
+      case "confirm-provide-training":
+        InteractionManager.confirmProvideTraining(interaction)
+        break;
+      case "cancel-provide-training":
+        InteractionManager.cancelProvideTraining(interaction)
+        break;
+      case "confirm-reset-training":
+        InteractionManager.confirmResetTraining(interaction)
+        break;
+      case "cancel-reset-training":
+        InteractionManager.cancelResetTraining(interaction)
+        break;
+
+    }
+})
+
 client.on('messageCreate', async (msg: Message) => {
-  const guildId = msg.guild.id
-  const chain = chainsMap.get(guildId)!
-  dataRetriever.fileManager.appendMessageToFile(msg.content, guildId)
-  chain.updateState(msg.content)
-  
-  const pingCondition = (msg.content.includes(`<@${client.user!.id}>`))
-  const randomRate: boolean = (chain.replyRate === 1) ? true :
-    chain.replyRate === 0 ? false :
-      ((Math.floor(Math.random() * chain.replyRate) + 1 === 1));
+  if (msg.author !== client.user) {
+    const guildId = msg.guild.id
+    const chain = chainsMap.get(guildId)!
+    dataRetriever.fileManager.appendMessageToFile(msg.content, guildId)
+    chain.updateState(msg.content)
 
-  if ((pingCondition || randomRate) && (msg.author !== client.user)) {
+    const pingCondition = (msg.content.includes(`<@${client.user!.id}>`))
+    const randomRate: boolean = (chain.replyRate === 1) ? true :
+      chain.replyRate === 0 ? false :
+        ((Math.floor(Math.random() * chain.replyRate) + 1 === 1));
 
-    const random = Math.floor(Math.random() * msg.content.split(' ').length + 5) + 1
+    if (pingCondition || randomRate) {
 
-    const reply = chain.talk(Math.floor(random * 3) + 1)
+      const random = Math.floor(Math.random() * msg.content.split(' ').length + 5) + 1
 
-    if (reply)
-      await msg.channel.send(reply)
+      const reply = chain.talk(Math.floor(random * 3) + 1)
+
+      if (reply)
+        await msg.channel.send(reply)
+    }
   }
 })
 
