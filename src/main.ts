@@ -10,6 +10,7 @@ import {
 import { startAdminServer } from './AdminServer';
 import { commands } from './Commands';
 import { DataRetriever } from './DataRetriever';
+import { FileManager } from './FileManager';
 import { InteractionManager } from './InteractionManager';
 import {
   chainsMap,
@@ -46,7 +47,7 @@ client.on('ready', () => {
   const guilds = client.guilds.cache
   guilds.forEach((guild: Guild) => {
     chainsMap.set(guild.id, new MarkovChain())
-    const previousData = dataRetriever.fileManager.getPreviousTrainingDataForGuild(guild.id)
+    const previousData = FileManager.getPreviousTrainingDataForGuild(guild.id)
     if (previousData !== null) {
       console.log(`Loading previous data for guild:${guild.name}`);
       //load data into markovchain
@@ -74,6 +75,7 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
   const chain = chainsMap.get(interaction.guildId);
   if (!chain) return;
   if (interaction.isChatInputCommand())
+
     switch (interaction.commandName) {
       case 'irlfact':
         InteractionManager.irlFact(interaction)
@@ -84,19 +86,28 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
         break;
 
       case 'providetraining':
-        InteractionManager.provideTraining(interaction)
+        if (await InteractionManager.checkAdmin(interaction))
+          InteractionManager.provideTraining(interaction)
         break;
 
       case "resettraining":
-        InteractionManager.resetTraining(interaction)
+        if (await InteractionManager.checkAdmin(interaction))
+          InteractionManager.resetTraining(interaction)
+        break;
+
+      case "delete":
+        if (await InteractionManager.checkAdmin(interaction))
+          InteractionManager.delete(interaction, interaction.options.getString('data'))
         break;
 
       case 'setreplyrate':
-        chain.replyRate = interaction.options.getInteger('rate');
-        const reply = (chain.replyRate === 0) ? `Ok, I won't reply to anybody` :
-          (chain.replyRate === 1) ? `Ok, I will always reply` : `Set reply rate to ${chain.replyRate}`
-
-        await interaction.reply({ content: reply });
+        if (await InteractionManager.checkAdmin(interaction)){
+          chain.replyRate = interaction.options.getInteger('rate');
+          const reply = (chain.replyRate === 0) ? `Ok, I won't reply to anybody` :
+            (chain.replyRate === 1) ? `Ok, I will always reply` : `Set reply rate to ${chain.replyRate}`
+  
+          await interaction.reply({ content: reply });
+        }
         break;
 
       case 'replyrate':
@@ -142,7 +153,7 @@ client.on('messageCreate', async (msg: Message) => {
   if (msg.author !== client.user) {
     const guildId = msg.guild.id
     const chain = chainsMap.get(guildId)!
-    dataRetriever.fileManager.appendMessageToFile(msg.content, guildId)
+    FileManager.appendMessageToFile(msg.content, guildId)
     chain.updateState(msg.content)
 
     const pingCondition = (msg.content.includes(`<@${client.user!.id}>`))

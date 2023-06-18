@@ -3,29 +3,27 @@ import {
   PathLike,
   readFileSync,
   statSync,
+  writeFileSync,
 } from 'fs';
 
 const DATA_FOLDER: PathLike = './train_data/';
 
 export class FileManager {
-  constructor() {
 
-  }
-
-  getPreviousTrainingDataForGuild(guildId: string): string[] | null {
+  static getPreviousTrainingDataForGuild(guildId: string): string[] | null {
     //check if file guildId.dt exists
-    if (this.fileExists(`${DATA_FOLDER}${guildId}.dt`))
-      return this.readMessagesFromFile(guildId);
+    if (FileManager.fileExists(`${DATA_FOLDER}${guildId}.dt`))
+      return FileManager.readMessagesFromFile(guildId);
     else return null;
 
   }
 
-  appendMessageToFile(msg: string, fileName: string): void {
+  static appendMessageToFile(msg: string, fileName: string): void {
     const cleanedMsg = msg.toLowerCase();
     appendFileSync(`${DATA_FOLDER}${fileName}.dt`, cleanedMsg + "\n");
   }
 
-  readMessagesFromFile(fileName: PathLike): string[] {
+  static readMessagesFromFile(fileName: PathLike): string[] {
     try {
       const fileContent: string = readFileSync(`${DATA_FOLDER}${fileName}.dt`, 'utf-8');
       const lines: string[] = fileContent.split('\n');
@@ -36,15 +34,26 @@ export class FileManager {
     }
   }
 
-  guildHasPreviousData(guildId: string): boolean {
-    return this.fileExists(`${DATA_FOLDER}${guildId}.dt`);
+  static guildHasPreviousData(guildId: string): boolean {
+    return FileManager.fileExists(`${DATA_FOLDER}${guildId}.dt`);
   }
 
-  private fileExists(filePath: PathLike): boolean {
+  private static fileExists(filePath: PathLike): boolean {
     try {
       return statSync(filePath).isFile();
     } catch (error) {
       return false;
+    }
+  }
+
+  static deleteOccurrences(stringToReplace: string, fileName: string): boolean {
+    try {
+      const fileContent = readFileSync(`${DATA_FOLDER}${fileName}.dt`, 'utf8');
+      const updatedContent = fileContent.replace(new RegExp(stringToReplace, 'g'), '');
+      writeFileSync(`${DATA_FOLDER}${fileName}.dt`, updatedContent, 'utf8');
+      return (fileContent !== updatedContent)
+    } catch (error) {
+      return false
     }
   }
 

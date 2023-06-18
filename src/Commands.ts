@@ -42,5 +42,17 @@ export const commands = [
           required: true,
         }
       ]
-    }
+    },
+    {
+      name: 'delete',
+      description: 'deletes the passed argument `data` from the memory',
+      options: [
+        {
+          name: 'data',
+          description: "The message or link you want to be erased from memory",
+          type: 3, //String type
+          required: true,
+        }
+      ]
+    },
   ];

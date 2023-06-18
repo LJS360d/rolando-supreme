@@ -10,10 +10,7 @@ import { FileManager } from './FileManager';
 import { client } from './main';
 
 export class DataRetriever {
-    public fileManager: FileManager;
-    constructor() {
-        this.fileManager = new FileManager();
-    }
+    constructor(){}
 
     async fetchAndStoreAllMessagesInGuild(guild: Guild): Promise<void> {
         return new Promise(async (resolve) => {
@@ -67,7 +64,7 @@ export class DataRetriever {
                             //check if msg has a working URL
                             const message: string = (containsWorkingURL(msg.content)) ? msg.content : msg.content.toLowerCase();
                             messages.push(message);
-                            this.fileManager.appendMessageToFile(message, fileName)
+                            FileManager.appendMessageToFile(message, fileName)
                         }
                     });
 

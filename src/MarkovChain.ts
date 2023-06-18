@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+import { FileManager } from './FileManager';
+
 /**
  * `key`: Guild ID 
  * `value`: new MarkovChain
@@ -15,16 +17,16 @@ interface MarkovState {
 export class MarkovChain {
     public state: MarkovState;
     public replyRate: number;
-    gifs: string[];
-    images: string[];
-    videos: string[];
-    
+    gifs: Set<string>;
+    images: Set<string>;
+    videos: Set<string>;
+
     constructor() {
         this.state = {};
         this.replyRate = 10
-        this.gifs = [];
-        this.images = [];
-        this.videos = [];
+        this.gifs = new Set<string>();
+        this.images = new Set<string>();
+        this.videos = new Set<string>();
     }
 
     provideData(messages: string[]): void {
@@ -36,11 +38,11 @@ export class MarkovChain {
     updateState(message: string): void {
         if (message.startsWith('https:')) {
             if (message.endsWith('.gif'))
-                this.gifs.push(message);
+                this.gifs.add(message);
             if (message.endsWith('.png') || message.endsWith('.jpeg') || message.endsWith('.jpg'))
-                this.images.push(message);
+                this.images.add(message);
             if (message.endsWith('.mp4') || message.endsWith('.mov'))
-                this.videos.push(message);
+                this.videos.add(message);
 
         }
         const words = message.split(' ');
@@ -157,14 +159,15 @@ export class MarkovChain {
     }
 
     async getGif(): Promise<string> {
-        while (this.gifs.length > 0) {
-            const randomIndex = Math.floor(Math.random() * this.gifs.length);
-            const gifURL = this.gifs[randomIndex];
+        const gifsArray = Array.from(this.gifs)
+        while (gifsArray.length > 0) {
+            const randomIndex = Math.floor(Math.random() * gifsArray.length);
+            const gifURL = gifsArray[randomIndex];
 
             if (await validateURL(gifURL)) {
                 return gifURL; // Valid URL
             } else {
-                this.gifs.splice(randomIndex, 1); // Remove invalid URL from array
+                gifsArray.splice(randomIndex, 1); // Remove invalid URL from array
             }
         }
 
@@ -172,30 +175,32 @@ export class MarkovChain {
     }
 
     async getImage(): Promise<string> {
-        while (this.images.length > 0) {
-            const randomIndex = Math.floor(Math.random() * this.images.length);
-            const imageURL = this.images[randomIndex];
+        const imagesArray = Array.from(this.images)
+        while (imagesArray.length > 0) {
+            const randomIndex = Math.floor(Math.random() * imagesArray.length);
+            const imageURL = imagesArray[randomIndex];
 
             if (await validateURL(imageURL)) {
                 return imageURL; // Valid URL
             } else {
-                // Remove invalid URL from array and try again1
-                this.images.splice(randomIndex, 1);
+                imagesArray.splice(randomIndex, 1); // Remove invalid URL from array
             }
         }
 
         return "I got no images in my brain"; // No valid URLs found
     }
 
+
     async getVideo(): Promise<string> {
-        while (this.videos.length > 0) {
-            const randomIndex = Math.floor(Math.random() * this.videos.length);
-            const videoURL = this.videos[randomIndex];
+        const videosArray = Array.from(this.videos)
+        while (videosArray.length > 0) {
+            const randomIndex = Math.floor(Math.random() * videosArray.length);
+            const videoURL = videosArray[randomIndex];
 
             if (await validateURL(videoURL)) {
                 return videoURL; // Valid URL
             } else {
-                this.videos.splice(randomIndex, 1); // Remove invalid URL from array
+                videosArray.splice(randomIndex, 1); // Remove invalid URL from array
             }
         }
 
@@ -213,13 +218,37 @@ export class MarkovChain {
         return text.replace(/\\n/g, '').trim();
     }
 
+    delete(message: string, fileName: string): boolean {
+        //given a message delete it from the markov chain
+        if (message.startsWith('https:')) {
+            if (message.endsWith('.gif'))
+                this.gifs.delete(message)
+            if (message.endsWith('.png') || message.endsWith('.jpeg') || message.endsWith('.jpg'))
+                this.images.delete(message);
+            if (message.endsWith('.mp4') || message.endsWith('.mov'))
+                this.videos.delete(message);
+        }
+        const words = message.split(' ');
+        for (let i = 0; i < words.length - 1; i++) {
+            const currentWord = words[i];
+            const nextWord = words[i + 1];
+            if (this.state[currentWord]) {
+                if (this.state[currentWord][nextWord]) {
+                    this.state[currentWord][nextWord]--;
+                }
+            }
+        }
+        //also delete it from training data storage
+        return FileManager.deleteOccurrences(message, fileName);
+    }
+
 }
 
 
 async function validateURL(url: string): Promise<boolean> {
     try {
         const response = await axios.get(url);
-        return response.status === 200; // Valid if status code is 200
+        return response.status === 200; 
     } catch (error) {
         return false; // Invalid URL or request error
     }

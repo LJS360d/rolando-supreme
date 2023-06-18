@@ -4,13 +4,15 @@ import {
   ButtonInteraction,
   ButtonStyle,
   ChatInputCommandInteraction,
+  PermissionsBitField,
 } from 'discord.js';
 
+import { FileManager } from './FileManager';
 import { dataRetriever } from './main';
 import { chainsMap } from './MarkovChain';
 
 export class InteractionManager {
-    constructor() {}
+    constructor() { }
 
     static async provideTraining(interaction: ChatInputCommandInteraction) {
         // Confirm Button
@@ -36,7 +38,7 @@ export class InteractionManager {
     }
 
     static async confirmProvideTraining(interaction: ButtonInteraction) {
-        if (!dataRetriever.fileManager.guildHasPreviousData(interaction.guild.id)) {
+        if (!FileManager.guildHasPreviousData(interaction.guild.id)) {
             await interaction.reply({
                 content: `<@${interaction.user.id}> Started Fetching messages.\nI will send a message when I'm done\nEstimated Time: \`1 Minute per every 4000 Messages in the Server\`\nThis might take a while...`,
                 ephemeral: true
@@ -47,7 +49,7 @@ export class InteractionManager {
                 const runtime = new Date(Date.now() - start);
                 const formattedTime = `${runtime.getMinutes()}m ${runtime.getSeconds()}s`;
                 interaction.channel.send(`<@${interaction.user.id}> Finished Fetching training data!\nTime Passed:\`${formattedTime}\``);
-                chainsMap.get(interaction.guild.id).provideData(dataRetriever.fileManager.getPreviousTrainingDataForGuild(interaction.guild.id));
+                chainsMap.get(interaction.guild.id).provideData(FileManager.getPreviousTrainingDataForGuild(interaction.guild.id));
             });
         } else {
             await interaction.reply({
@@ -122,5 +124,27 @@ export class InteractionManager {
         }).catch(error => {
             console.error(error);
         });
+    }
+
+    static async delete(interaction: ChatInputCommandInteraction, message: string) {
+        const guildId = interaction.guild.id
+        const success = chainsMap.get(guildId).delete(message, guildId)
+        if (success)
+            await interaction.reply({
+                content: `Deleted data: \`${message}\``,
+                ephemeral: true
+            });
+        else
+            await interaction.reply({
+                content: `Data not found: \`${message}\``,
+                ephemeral: true
+            });
+    }
+
+    static async checkAdmin(interaction: ChatInputCommandInteraction) {
+        if (!(interaction.member.permissions as Readonly<PermissionsBitField>).has('Administrator')) {            
+            await interaction.reply({ content: 'You are not authorized to use this command.', ephemeral: true });
+            return false;
+        } else return true;
     }
 }
