@@ -23,7 +23,7 @@ export class MarkovChain {
 
     constructor() {
         this.state = {};
-        this.replyRate = 10
+        this.replyRate = 10;
         this.gifs = new Set<string>();
         this.images = new Set<string>();
         this.videos = new Set<string>();
@@ -248,7 +248,7 @@ export class MarkovChain {
 async function validateURL(url: string): Promise<boolean> {
     try {
         const response = await axios.get(url);
-        return response.status === 200; 
+        return response.status === 200;
     } catch (error) {
         return false; // Invalid URL or request error
     }

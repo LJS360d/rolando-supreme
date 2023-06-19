@@ -51,7 +51,8 @@ client.on('ready', () => {
     if (previousData !== null) {
       console.log(`Loading previous data for guild:${guild.name}`);
       //load data into markovchain
-      chainsMap.get(guild.id)?.provideData(previousData)
+      chainsMap.get(guild.id)!.provideData(previousData)
+      chainsMap.get(guild.id)!.replyRate = (FileManager.getReplyRate(guild.id) ?? 10)
       console.log(`Loaded ${previousData.length} messages into MarkovChain for guild:${guild.name}`);
 
     } else
@@ -96,18 +97,18 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
         break;
 
       case "delete":
-        if (await InteractionManager.checkAdmin(interaction))
+        //if (await InteractionManager.checkAdmin(interaction))
           InteractionManager.delete(interaction, interaction.options.getString('data'))
         break;
 
       case 'setreplyrate':
-        if (await InteractionManager.checkAdmin(interaction)){
+        //if (await InteractionManager.checkAdmin(interaction)) {
           chain.replyRate = interaction.options.getInteger('rate');
           const reply = (chain.replyRate === 0) ? `Ok, I won't reply to anybody` :
-            (chain.replyRate === 1) ? `Ok, I will always reply` : `Set reply rate to ${chain.replyRate}`
-  
+          (chain.replyRate === 1) ? `Ok, I will always reply` : `Set reply rate to ${chain.replyRate}`
+          FileManager.saveReplyRate(chain.replyRate, interaction.guild.id)
           await interaction.reply({ content: reply });
-        }
+        //}
         break;
 
       case 'replyrate':
@@ -174,14 +175,19 @@ client.on('messageCreate', async (msg: Message) => {
 })
 
 client.login(TOKEN);
+
 startAdminServer()
 
 process.on('SIGINT', async () => {
   console.log('Received SIGINT signal. Shutting down gracefully...');
+  /* const logChannel = (client.guilds.cache.get('1119326293255786596').channels.cache.get('1120120129578090586') as GuildTextBasedChannel);
+  await logChannel.send('Rolando has been shut down') */
   process.exit(0)
 })
 
 process.on('SIGTERM', async () => {
   console.log('Received SIGTERM signal. Shutting down gracefully...');
+  /* const logChannel = (client.guilds.cache.get('1119326293255786596').channels.cache.get('1120120129578090586') as GuildTextBasedChannel);
+  await logChannel.send('Rolando has been shut down') */
   process.exit(0)
 })
