@@ -44,7 +44,7 @@ export const commands = [
       ]
     },
     {
-      name: 'delete',
+      name: 'wipe',
       description: 'deletes the passed argument `data` from the memory',
       options: [
         {

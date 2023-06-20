@@ -164,11 +164,11 @@ export class MarkovChain {
             const randomIndex = Math.floor(Math.random() * gifsArray.length);
             const gifURL = gifsArray[randomIndex];
 
-            if (await validateURL(gifURL)) {
+            if (await validateURL(gifURL))
                 return gifURL; // Valid URL
-            } else {
-                gifsArray.splice(randomIndex, 1); // Remove invalid URL from array
-            }
+
+            gifsArray.splice(randomIndex, 1); // Remove invalid URL from array
+
         }
 
         return "I got no gifs in my brain"; // No valid URLs found
@@ -180,11 +180,10 @@ export class MarkovChain {
             const randomIndex = Math.floor(Math.random() * imagesArray.length);
             const imageURL = imagesArray[randomIndex];
 
-            if (await validateURL(imageURL)) {
+            if (await validateURL(imageURL))
                 return imageURL; // Valid URL
-            } else {
-                imagesArray.splice(randomIndex, 1); // Remove invalid URL from array
-            }
+            imagesArray.splice(randomIndex, 1); // Remove invalid URL from array
+
         }
 
         return "I got no images in my brain"; // No valid URLs found
@@ -197,11 +196,10 @@ export class MarkovChain {
             const randomIndex = Math.floor(Math.random() * videosArray.length);
             const videoURL = videosArray[randomIndex];
 
-            if (await validateURL(videoURL)) {
+            if (await validateURL(videoURL))
                 return videoURL; // Valid URL
-            } else {
-                videosArray.splice(randomIndex, 1); // Remove invalid URL from array
-            }
+            videosArray.splice(randomIndex, 1); // Remove invalid URL from array
+
         }
 
         return "I got no videos in my brain"; // No valid URLs found

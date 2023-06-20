@@ -96,7 +96,7 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
           InteractionManager.resetTraining(interaction)
         break;
 
-      case "delete":
+      case "wipe":
         //if (await InteractionManager.checkAdmin(interaction))
           InteractionManager.delete(interaction, interaction.options.getString('data'))
         break;

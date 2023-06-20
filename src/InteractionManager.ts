@@ -38,27 +38,25 @@ export class InteractionManager {
     }
 
     static async confirmProvideTraining(interaction: ButtonInteraction) {
-        if (!FileManager.guildHasPreviousData(interaction.guild.id)) {
-            await interaction.reply({
-                content: `<@${interaction.user.id}> Started Fetching messages.\nI will send a message when I'm done\nEstimated Time: \`1 Minute per every 4000 Messages in the Server\`\nThis might take a while...`,
-                ephemeral: true
-            });
-
-            const start = Date.now();
-            await dataRetriever.fetchAndStoreAllMessagesInGuild(interaction.guild).then(() => {
-                const runtime = new Date(Date.now() - start);
-                const formattedTime = `${runtime.getMinutes()}m ${runtime.getSeconds()}s`;
-                interaction.channel.send(`<@${interaction.user.id}> Finished Fetching training data!\nTime Passed:\`${formattedTime}\``);
-                chainsMap.get(interaction.guild.id).provideData(FileManager.getPreviousTrainingDataForGuild(interaction.guild.id));
-            });
-        } else {
+        if (FileManager.guildHasPreviousData(interaction.guild.id)) {
             await interaction.reply({
                 content: `I already have training data for this server`,
                 ephemeral: true
             });
+            return;
         }
+        await interaction.reply({
+            content: `<@${interaction.user.id}> Started Fetching messages.\nI will send a message when I'm done\nEstimated Time: \`1 Minute per every 4000 Messages in the Server\`\nThis might take a while...`,
+            ephemeral: true
+        });
 
-        //rest
+        const start = Date.now();
+        await dataRetriever.fetchAndStoreAllMessagesInGuild(interaction.guild).then(() => {
+            const runtime = new Date(Date.now() - start);
+            const formattedTime = `${runtime.getMinutes()}m ${runtime.getSeconds()}s`;
+            interaction.channel.send(`<@${interaction.user.id}> Finished Fetching training data!\nTime Passed:\`${formattedTime}\``);
+            chainsMap.get(interaction.guild.id).provideData(FileManager.getPreviousTrainingDataForGuild(interaction.guild.id));
+        });
     }
 
     static async cancelProvideTraining(interaction: ButtonInteraction) {
@@ -129,22 +127,16 @@ export class InteractionManager {
     static async delete(interaction: ChatInputCommandInteraction, message: string) {
         const guildId = interaction.guild.id
         const success = chainsMap.get(guildId).delete(message, guildId)
-        if (success)
-            await interaction.reply({
-                content: `Deleted data: \`${message}\``,
-                ephemeral: true
-            });
-        else
-            await interaction.reply({
-                content: `Data not found: \`${message}\``,
-                ephemeral: true
-            });
+        await interaction.reply({
+            content: `${success ? "Deleted data:" : "Data not found:"} \`${message}\``,
+            ephemeral: true
+        });
     }
 
     static async checkAdmin(interaction: ChatInputCommandInteraction) {
-        if (!(interaction.member.permissions as Readonly<PermissionsBitField>).has('Administrator')) {            
+        if (!(interaction.member.permissions as Readonly<PermissionsBitField>).has('Administrator')) {
             await interaction.reply({ content: 'You are not authorized to use this command.', ephemeral: true });
             return false;
-        } else return true;
+        } return true;
     }
 }
