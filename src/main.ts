@@ -86,6 +86,9 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
         InteractionManager.catFact(interaction)
         break;
 
+      case 'ping':
+        InteractionManager.ping(interaction)
+        break;
       case 'providetraining':
         if (await InteractionManager.checkAdmin(interaction))
           InteractionManager.provideTraining(interaction)

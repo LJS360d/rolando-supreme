@@ -139,4 +139,20 @@ export class InteractionManager {
             return false;
         } return true;
     }
+
+    static async ping(interaction: ChatInputCommandInteraction) {
+        try {
+            const members = await interaction.guild.members.fetch();
+
+            const userIds = members.map(member => member.user.id);
+
+            const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
+
+            await interaction.reply({
+                content: `<@${randomUserId}>`
+            });
+        } catch (error) {
+            console.error('An error occurred:', error);
+        }
+    }
 }

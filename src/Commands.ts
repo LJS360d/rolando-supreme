@@ -8,6 +8,10 @@ export const commands = [
       description: 'Replies with a random cat fact'
     },
     {
+      name: 'ping',
+      description: 'pings a random user'
+    },
+    {
       name: 'gif',
       description: 'Replies with a gif from the ones it has learned COULD BE NSFW!'
     },

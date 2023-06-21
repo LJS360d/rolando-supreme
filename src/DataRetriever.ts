@@ -17,10 +17,10 @@ export class DataRetriever {
             const channelPromises: Promise<void>[] = [];
             guild.channels.cache.forEach(async (channel: BaseChannel) => {
                 try {
-                    const canSeeChannel = (channel as GuildTextBasedChannel).permissionsFor(client.user).has(PermissionFlagsBits.ReadMessageHistory)
+                    const canReadChannel = (channel as GuildTextBasedChannel).permissionsFor(client.user).has(PermissionFlagsBits.ReadMessageHistory)
                     const canAccessChannel = (channel as GuildTextBasedChannel).permissionsFor(client.user).has(PermissionFlagsBits.SendMessages)
                     const canViewChannel = (channel as GuildTextBasedChannel).permissionsFor(client.user).has(PermissionFlagsBits.ViewChannel)
-                    const isValidChannel = (!channel.isVoiceBased() && channel.isTextBased() && canSeeChannel && canAccessChannel && canViewChannel)
+                    const isValidChannel = (!channel.isVoiceBased() && channel.isTextBased() && canReadChannel && canAccessChannel && canViewChannel)
 
                     if (isValidChannel) {
                         //Gives the channel to be iterated for message fetching
