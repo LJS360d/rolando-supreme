@@ -101,16 +101,16 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
 
       case "wipe":
         //if (await InteractionManager.checkAdmin(interaction))
-          InteractionManager.delete(interaction, interaction.options.getString('data'))
+        InteractionManager.delete(interaction, interaction.options.getString('data'))
         break;
 
       case 'setreplyrate':
         //if (await InteractionManager.checkAdmin(interaction)) {
-          chain.replyRate = interaction.options.getInteger('rate');
-          const reply = (chain.replyRate === 0) ? `Ok, I won't reply to anybody` :
+        chain.replyRate = interaction.options.getInteger('rate');
+        const reply = (chain.replyRate === 0) ? `Ok, I won't reply to anybody` :
           (chain.replyRate === 1) ? `Ok, I will always reply` : `Set reply rate to ${chain.replyRate}`
-          FileManager.saveReplyRate(chain.replyRate, interaction.guild.id)
-          await interaction.reply({ content: reply });
+        FileManager.saveReplyRate(chain.replyRate, interaction.guild.id)
+        await interaction.reply({ content: reply });
         //}
         break;
 
