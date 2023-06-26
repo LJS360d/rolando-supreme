@@ -2,7 +2,6 @@ import {
   ButtonInteraction,
   ChatInputCommandInteraction,
   Client,
-  GatewayIntentBits,
   Guild,
   Message,
 } from 'discord.js';
@@ -16,27 +15,12 @@ import {
   chainsMap,
   MarkovChain,
 } from './MarkovChain';
+import { options } from './Options';
 
 // Import dotenv to load environment variables from .env file
 require('dotenv').config();
 const TOKEN = process.env['TOKEN'];
-const options = {
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildScheduledEvents,
-    // GatewayIntentBits.GuildInvites,
-    // GatewayIntentBits.GuildPresences,
-    // GatewayIntentBits.GuildVoiceStates,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.GuildMessageTyping,
-    // GatewayIntentBits.DirectMessages,
-    // GatewayIntentBits.DirectMessageReactions,
-    // GatewayIntentBits.DirectMessageTyping,
-    GatewayIntentBits.MessageContent,
-  ],
-}
+
 
 export const client = new Client(options);
 export const dataRetriever = new DataRetriever()
