@@ -20,7 +20,7 @@ Rolando was only inspired by Fioriktos,<br>
 the bot is not affiliated with Fioriktos or any of its associated entities in any way.
 # Contact
 If you have any questions or issues with Rolando, you can join the official Discord Server:
-[Click Here](https://discord.gg/SFkM5mP24S)
+[Click Here](https://discord.gg/tyrj7wte5b)
 # Links:
 ## [Discord Invite Link](https://discord.com/api/oauth2/authorize?client_id=1100311970428756039&permissions=412317251648&scope=bot)
 
