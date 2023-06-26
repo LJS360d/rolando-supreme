@@ -3,6 +3,7 @@ import {
   PathLike,
   readFileSync,
   statSync,
+  unlinkSync,
   writeFileSync,
 } from 'fs';
 
@@ -57,6 +58,10 @@ export class FileManager {
     }
   }
 
+  static deleteGuildData(guildId: string): void {
+    unlinkSync(`${DATA_FOLDER}${guildId}.dt`)
+  }
+
   static saveReplyRate(replyRate: number, guildId: string): void {
     const data = `${guildId};${replyRate}\n`;
     const filePath = `${DATA_FOLDER}_reply_rates.dt`;
@@ -76,6 +81,7 @@ export class FileManager {
 
     appendFileSync(filePath, data, 'utf8');
   }
+
   static getReplyRate(guildId: string): number | undefined {
     const fileContent = readFileSync(`${DATA_FOLDER}_reply_rates.dt`, 'utf8');
     const regex = new RegExp(`${guildId};\\d{1,}\\n`, 'gm');

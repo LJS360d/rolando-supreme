@@ -6,7 +6,7 @@ export const options = {
         //intents.AutoModerationExecution,
         //intents.DirectMessageReactions,
         //intents.DirectMessages,
-        //intents.GuildEmojisAndStickers,
+        intents.GuildEmojisAndStickers,
         //intents.GuildIntegrations,
         //intents.GuildInvites,
         intents.GuildMembers,

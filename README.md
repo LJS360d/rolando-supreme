@@ -22,9 +22,9 @@ the bot is not affiliated with Fioriktos or any of its associated entities in an
 If you have any questions or issues with Rolando, you can join the official Discord Server:
 [Click Here](https://discord.gg/SFkM5mP24S)
 # Links:
-## [Discord Invite Link](https://discord.com/api/oauth2/authorize?client_id=1100311970428756039&permissions=8&scope=bot)
+## [Discord Invite Link](https://discord.com/api/oauth2/authorize?client_id=1100311970428756039&permissions=412317251648&scope=bot)
 
-#### [Resume Page](https://rolando.ljs360d.repl.co)
+## [Resume Page](https://rolando.ljs360d.repl.co)
 
 
 

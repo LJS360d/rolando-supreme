@@ -56,6 +56,11 @@ client.on('guildCreate', (guild: Guild) => {
   chainsMap.set(guild.id, new MarkovChain())
   guild.systemChannel.send(`Sup, i'm Rolando. \nRun \`/providetraining\` to actually make me do stuff.\nThe more messages there are in the server, the more it will make me _intelligent_.`)
 })
+client.on('guildDelete', (guild: Guild) => {
+  chainsMap.delete(guild.id)
+  FileManager.deleteGuildData(guild.id)
+})
+// Command Interactions
 client.on('interactionCreate', async function (interaction: ChatInputCommandInteraction) {
   const chain = chainsMap.get(interaction.guildId);
   if (!chain) return;
@@ -117,7 +122,7 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
     }
 
 });
-
+// Button Interactions
 client.on('interactionCreate', async function (interaction: ButtonInteraction) {
   if (interaction.isButton())
     switch (interaction.customId) {
