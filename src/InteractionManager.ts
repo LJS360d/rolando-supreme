@@ -4,6 +4,7 @@ import {
   ButtonInteraction,
   ButtonStyle,
   ChatInputCommandInteraction,
+    EmbedBuilder,
   PermissionsBitField,
 } from 'discord.js';
 
@@ -11,8 +12,46 @@ import { FileManager } from './FileManager';
 import { dataRetriever } from './main';
 import { chainsMap } from './MarkovChain';
 
+export const JOIN_LABEL =
+    `Hello, i'm Rolando.\n
+I learn to type from the messages you send in chat\n
+Run \`/providetraining\` to make me learn from all previous messages.\n
+The more messages there are in the server, the more it will make me _intelligent_.`
 export class InteractionManager {
-    constructor() { }
+    static async getTrainingData(interaction: ChatInputCommandInteraction | ButtonInteraction) {
+        await interaction.reply({
+            content: `<@${interaction.user.id}> Started Fetching messages.\nI will send a message when I'm done\nEstimated Time: \`1 Minute per every 4000 Messages in the Server\`\nThis might take a while...`,
+            ephemeral: true
+        });
+
+        const start = Date.now();
+        await dataRetriever.fetchAndStoreAllMessagesInGuild(interaction.guild).then(() => {
+            const runtime = new Date(Date.now() - start);
+            const formattedTime = `${runtime.getMinutes()}m ${runtime.getSeconds()}s`;
+            interaction.channel.send(`<@${interaction.user.id}> Finished Fetching training data!\nTime Passed: \`${formattedTime}\``);
+            chainsMap.get(interaction.guild.id).provideData(FileManager.getPreviousTrainingDataForGuild(interaction.guild.id));
+        });
+    }
+
+    static async getAnalytics(interaction: ChatInputCommandInteraction) {
+        const chain = chainsMap.get(interaction.guild.id);
+        const analytics = chain.getAnalytics();
+        const embed = new EmbedBuilder()
+            .setTitle('Analytics')
+            .setDescription('Complexity Score indicates how _smart_ the bot is.\n Higher value means smarter')
+            .setColor('Gold')
+            .addFields(
+                { name: 'Complexity Score', value: `\`${analytics.complexityScore}\``, inline: true },
+                { name: 'Vocabulary', value: `\`${analytics.words} words\` `, inline: true },
+                { name: '\t', value: '\t' },
+                { name: 'Gifs', value: `\`${analytics.gifs}\``, inline: true },
+                { name: 'Videos', value: `\`${analytics.videos}\``, inline: true },
+                { name: 'Images', value: `\`${analytics.images}\``, inline: true },
+            )
+        await interaction.reply({
+            embeds: [embed]
+        })
+    }
 
     static async provideTraining(interaction: ChatInputCommandInteraction) {
         // Confirm Button
@@ -30,7 +69,7 @@ export class InteractionManager {
             .addComponents(confirm, cancel);
 
         await interaction.reply({
-            content: `Are you sure you want to provide **ALL THE MESSAGES IN THE SERVER** as training data for me?\nThis will make me fetch all the channels i can access.\nIf you don't want me to learn from a some channels, remove my permisions to type in them.`,
+            content: `Are you sure you want to provide **ALL THE MESSAGES IN THE SERVER** as training data for me?\nThis will make me fetch all the channels i can access.\nIf you don't want me to learn from some channels, remove my permisions to type in them.`,
             components: [row as any],
             ephemeral: true,
 
@@ -39,24 +78,26 @@ export class InteractionManager {
 
     static async confirmProvideTraining(interaction: ButtonInteraction) {
         if (FileManager.guildHasPreviousData(interaction.guild.id)) {
+            const confirm = new ButtonBuilder()
+                .setCustomId('overwrite-training')
+                .setLabel('Overwrite')
+                .setStyle(ButtonStyle.Success);
+            const cancel = new ButtonBuilder()
+                .setCustomId('cancel-provide-training')
+                .setLabel('Cancel')
+                .setStyle(ButtonStyle.Secondary);
+
+            const row = new ActionRowBuilder()
+                .addComponents(confirm, cancel);
+
             await interaction.reply({
-                content: `I already have training data for this server`,
-                ephemeral: true
+                content: `Training data for this server has been found\nWould you like to overwrite it?`,
+                components: [row as any],
+                ephemeral: true,            
             });
             return;
         }
-        await interaction.reply({
-            content: `<@${interaction.user.id}> Started Fetching messages.\nI will send a message when I'm done\nEstimated Time: \`1 Minute per every 4000 Messages in the Server\`\nThis might take a while...`,
-            ephemeral: true
-        });
-
-        const start = Date.now();
-        await dataRetriever.fetchAndStoreAllMessagesInGuild(interaction.guild).then(() => {
-            const runtime = new Date(Date.now() - start);
-            const formattedTime = `${runtime.getMinutes()}m ${runtime.getSeconds()}s`;
-            interaction.channel.send(`<@${interaction.user.id}> Finished Fetching training data!\nTime Passed:\`${formattedTime}\``);
-            chainsMap.get(interaction.guild.id).provideData(FileManager.getPreviousTrainingDataForGuild(interaction.guild.id));
-        });
+        this.getTrainingData(interaction);
     }
 
     static async cancelProvideTraining(interaction: ButtonInteraction) {

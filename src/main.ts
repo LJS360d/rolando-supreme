@@ -10,7 +10,10 @@ import { startAdminServer } from './AdminServer';
 import { commands } from './Commands';
 import { DataRetriever } from './DataRetriever';
 import { FileManager } from './FileManager';
-import { InteractionManager } from './InteractionManager';
+import {
+  InteractionManager,
+  JOIN_LABEL,
+} from './InteractionManager';
 import {
   chainsMap,
   MarkovChain,
@@ -54,7 +57,7 @@ client.on('ready', () => {
 })
 client.on('guildCreate', (guild: Guild) => {
   chainsMap.set(guild.id, new MarkovChain())
-  guild.systemChannel.send(`Sup, i'm Rolando. \nRun \`/providetraining\` to actually make me do stuff.\nThe more messages there are in the server, the more it will make me _intelligent_.`)
+  guild.systemChannel.send(JOIN_LABEL)
 })
 client.on('guildDelete', (guild: Guild) => {
   chainsMap.delete(guild.id)
@@ -106,6 +109,9 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
       case 'replyrate':
         await interaction.reply(`The reply rate is currently set to ${chain.replyRate}\nUse \`/setreplyrate\` to change it`);
         break;
+      case 'analytics':
+        await InteractionManager.getAnalytics(interaction);
+        break;
 
       case 'gif':
         await interaction.reply(await chain.getGif());
@@ -126,6 +132,9 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
 client.on('interactionCreate', async function (interaction: ButtonInteraction) {
   if (interaction.isButton())
     switch (interaction.customId) {
+      case "overwrite-training":
+        InteractionManager.getTrainingData(interaction)
+        break;
       case "confirm-provide-training":
         InteractionManager.confirmProvideTraining(interaction)
         break;

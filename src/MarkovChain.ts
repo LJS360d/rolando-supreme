@@ -13,7 +13,14 @@ interface MarkovState {
         [key: string]: number;
     };
 }
-
+export interface ChainAnalytics {
+    complexityScore: number,
+    gifs: number,
+    images: number,
+    videos: number,
+    replyRate: number,
+    words: number
+}
 export class MarkovChain {
     public state: MarkovState;
     public replyRate: number;
@@ -146,7 +153,7 @@ export class MarkovChain {
             const nextWords = this.state[currentWord];
             for (const nextWord in nextWords) {
                 const wordValue = nextWords[nextWord];
-                if (wordValue > USE_THRESHOLD) { // Adjust the threshold for what is considered a "high-value" word
+                if (wordValue > USE_THRESHOLD) { // threshold for what is considered a "high-value" word
                     highValueWords++;
                 }
             }
@@ -156,6 +163,17 @@ export class MarkovChain {
 
         return complexityScore;
 
+    }
+
+    getAnalytics(): ChainAnalytics {
+        return {
+            complexityScore: this.getComplexity(),
+            gifs: this.gifs.size,
+            images: this.images.size,
+            videos: this.videos.size,
+            replyRate: this.replyRate,
+            words: Object.keys(this.state).length
+        } as ChainAnalytics
     }
 
     async getGif(): Promise<string> {
@@ -188,7 +206,6 @@ export class MarkovChain {
 
         return "I got no images in my brain"; // No valid URLs found
     }
-
 
     async getVideo(): Promise<string> {
         const videosArray = Array.from(this.videos)
