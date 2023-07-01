@@ -155,8 +155,10 @@ client.on('messageCreate', async (msg: Message) => {
   if (msg.author !== client.user) {
     const guildId = msg.guild.id
     const chain = chainsMap.get(guildId)!
-    FileManager.appendMessageToFile(msg.content, guildId)
-    chain.updateState(msg.content)
+    if (msg.content) {
+      FileManager.appendMessageToFile(msg.content, guildId)
+      chain.updateState(msg.content)
+    }
 
     const pingCondition = (msg.content.includes(`<@${client.user!.id}>`))
     const randomRate: boolean = (chain.replyRate === 1) ? true :
