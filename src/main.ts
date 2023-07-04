@@ -79,6 +79,7 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
         break;
 
       case 'ping':
+        if(await InteractionManager.checkAdmin(interaction))
         InteractionManager.ping(interaction)
         break;
       case 'providetraining':
@@ -169,7 +170,7 @@ client.on('messageCreate', async (msg: Message) => {
 
       const random = Math.floor(Math.random() * msg.content.split(' ').length + 5) + 1
 
-      const reply = chain.talk(Math.floor(random * 3) + 1)
+      const reply = chain.talk(Math.floor(random * 2) + 1)
 
       if (reply)
         await msg.channel.send(reply)
