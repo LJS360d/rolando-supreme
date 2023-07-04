@@ -30,24 +30,29 @@
             font-size: 24px;
             margin-bottom: 10px;
         }
+
         lb {
             font-weight: 600;
         }
+
         ul {
             list-style: none;
             padding: 0;
             overflow-y: auto;
             overflow-x: hidden;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: .5rem;
             height: 75vh;
+            display: flex;
         }
 
         li {
-            margin-bottom: 10px;
             background-color: #fff;
             padding: 10px;
             border-radius: 4px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-
+            height: min-content;
             display: flex;
             align-items: center;
             gap: 2rem;
@@ -57,7 +62,6 @@
         li div {
             gap: 0.5rem;
             display: flex;
-            align-items: center;
         }
 
         img.guild-icon {
@@ -65,41 +69,59 @@
             aspect-ratio: 1;
         }
 
-        .guild-wrapper {
-            display: flex;
+        span,
+        b {
+            width: max-content;
         }
 
-        .guild-wrapper span {
-            font-size: 2pc;
+        .guild-wrapper {
+            min-width: 8.5rem;
+            display: flex;
+            flex-direction: column;
+            font-size: .9pc;
+            align-items: flex-start;
         }
 
         .chain-wrapper {
-            min-width: 24rem;
+            width: 100%;
+            font-size: .9pc;
             display: flex;
             align-items: flex-start;
             flex-direction: column;
+        }
+
+        #version {
+            margin: inherit;
+            padding: inherit;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
 
 <body>
     <h1><img class="guild-icon" src="<%=client.user.avatarURL()%>">
-        <%= client.user.tag%>
+        <%= client.user.tag%>   
     </h1>
+    <span id="version">Version: <b><%= version %></b></span>
     <hr>
+    <span>Uptime: <b id="uptime" start=<%=startTime%>></b></span>
+    <br>
     <span>Currently part of <%=guilds.size%> guilds</span>
-    <ul>
+    <ul>            
         <% guilds.forEach((guild)=> { %>
             <li>
                 <% chain=chains.get(guild.id)%>
-                    <div class="guild-wrapper">
-                        <img class="guild-icon" src="<%=guild.iconURL()%>">
-                        <span>
-                            <%= guild.name %>
-                                | Members:
-                                <%= guild.memberCount%>
-                        </span>
-                    </div>
+                <div class="guild-wrapper">
+                    <b>
+                        <%= guild.name %>
+                    </b>
+                    <img class="guild-icon" src="<%=guild.iconURL()%>">
+                    <span>
+                        <%= guild.memberCount%> members
+                    </span>
+                </div>
                     <div class="chain-wrapper">
                         <span>
                             MarkovState <lb>Complexity</lb>:
@@ -133,9 +155,38 @@
                         </span>
                     </div>
             </li>
-            <% }); %>
+            <% }); %>      
     </ul>
+    <script type="text/javascript">
+        updateUptime()
+        setInterval(updateUptime, 1000)
+        function updateUptime() {
+            const uptimeElem = document.getElementById('uptime');
+            uptimeElem.textContent = formatTime(Date.now() - Number(uptimeElem.getAttribute('start')))
+        }
+        function formatTime(milliseconds) {
+            const units = [
+                { label: 'y', divisor: 1000 * 60 * 60 * 24 * 30 * 12 },
+                { label: 'm', divisor: 1000 * 60 * 60 * 24 * 30 },
+                { label: 'd', divisor: 1000 * 60 * 60 * 24 },
+                { label: 'h', divisor: 1000 * 60 * 60 },
+                { label: 'm', divisor: 1000 * 60 },
+                { label: 's', divisor: 1000 }
+            ];
 
+            let output = '';
+            for (const unit of units) {
+                const value = Math.floor(milliseconds / unit.divisor);
+                if (value > 0 || output !== '') {
+                    output += `${value.toString().padStart(2, '0')}${unit.label} `;
+                    milliseconds %= unit.divisor;
+                }
+            }
+
+            return output.trim();
+        }
+
+    </script>
 </body>
 
 </html>

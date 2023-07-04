@@ -4,7 +4,7 @@ import {
   ButtonInteraction,
   ButtonStyle,
   ChatInputCommandInteraction,
-    EmbedBuilder,
+  EmbedBuilder,
   PermissionsBitField,
 } from 'discord.js';
 
@@ -186,11 +186,10 @@ export class InteractionManager {
             const members = await interaction.guild.members.fetch();
 
             const userIds = members.map(member => member.user.id);
-
             const randomUserId = userIds[Math.floor(Math.random() * userIds.length)];
-
+            const random = Math.floor(Math.random() * 15) + 1;
             await interaction.reply({
-                content: `<@${randomUserId}>`
+                content: `<@${randomUserId}> ${chainsMap.get(interaction.guild.id).talk(random)}`
             });
         } catch (error) {
             console.error('An error occurred:', error);
