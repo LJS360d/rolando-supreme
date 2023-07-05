@@ -79,9 +79,10 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
         break;
 
       case 'ping':
-        if(await InteractionManager.checkAdmin(interaction))
-        InteractionManager.ping(interaction)
+        if (await InteractionManager.checkAdmin(interaction))
+          InteractionManager.ping(interaction)
         break;
+
       case 'providetraining':
         if (await InteractionManager.checkAdmin(interaction))
           InteractionManager.provideTraining(interaction)
@@ -110,8 +111,13 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
       case 'replyrate':
         await interaction.reply(`The reply rate is currently set to ${chain.replyRate}\nUse \`/setreplyrate\` to change it`);
         break;
+
       case 'analytics':
         await InteractionManager.getAnalytics(interaction);
+        break;
+
+      case 'help':
+        await InteractionManager.help(interaction);
         break;
 
       case 'gif':
@@ -125,6 +131,7 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
       case 'video':
         await interaction.reply(await chain.getVideo());
         break;
+
 
     }
 
@@ -161,19 +168,21 @@ client.on('messageCreate', async (msg: Message) => {
       chain.updateState(msg.content)
     }
 
-    const pingCondition = (msg.content.includes(`<@${client.user!.id}>`))
+    const pingCondition: boolean = (msg.content.includes(`<@${client.user!.id}>`))
     const randomRate: boolean = (chain.replyRate === 1) ? true :
       chain.replyRate === 0 ? false :
         ((Math.floor(Math.random() * chain.replyRate) + 1 === 1));
 
     if (pingCondition || randomRate) {
-
-      const random = Math.floor(Math.random() * msg.content.split(' ').length + 5) + 1
-
-      const reply = chain.talk(Math.floor(random * 2) + 1)
-
-      if (reply)
-        await msg.channel.send(reply)
+      // 4 to 25
+      const random = Math.floor(Math.random() * 21) + 4;
+      // 95% Plain message, 5% Gif/Img/Vid
+      const reply = (random <= 24)
+        ? chain.talk(random)
+        : ((Math.random() < 1 / 3) ? await chain.getGif()
+          : ((Math.random() < 0.5) ? await chain.getImage()
+            : await chain.getVideo()));
+      await msg.channel.send(reply);
     }
   }
 })

@@ -8,6 +8,7 @@ import {
   PermissionsBitField,
 } from 'discord.js';
 
+import { commands } from './Commands';
 import { FileManager } from './FileManager';
 import { dataRetriever } from './main';
 import { chainsMap } from './MarkovChain';
@@ -93,7 +94,7 @@ export class InteractionManager {
             await interaction.reply({
                 content: `Training data for this server has been found\nWould you like to overwrite it?`,
                 components: [row as any],
-                ephemeral: true,            
+                ephemeral: true,
             });
             return;
         }
@@ -192,7 +193,28 @@ export class InteractionManager {
                 content: `<@${randomUserId}> ${chainsMap.get(interaction.guild.id).talk(random)}`
             });
         } catch (error) {
-            console.error('An error occurred:', error);
+            console.log('An error occurred:', error);
+        }
+    }
+
+    static async help(interaction: ChatInputCommandInteraction) {
+        try {
+            const embed = new EmbedBuilder()
+                .setTitle('Rolando Help')
+                .setDescription('Rolando is a bot that learns to type like a server user')
+                .setColor('Gold');
+            commands.forEach((command: { name: string, description: string }) => {
+                embed.addFields({
+                    name: `\`${command.name}\``,
+                    value: command.description,
+                });
+            });
+            await interaction.reply({
+                embeds: [embed],
+                ephemeral: true
+            });
+        } catch (error) {
+            console.log('An error occurred:', error);
         }
     }
 }

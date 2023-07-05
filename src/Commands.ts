@@ -1,5 +1,17 @@
 export const commands = [
   {
+    name: 'help',
+    description: 'Shows available commands'
+  },
+  {
+    name: 'providetraining',
+    description: 'Memorizes all the messages of the SERVER and uses them as training data',
+  },
+  {
+    name: 'resettraining',
+    description: 'Deletes all memorized messages, will make me learn from new messages only',
+  },
+  {
     name: 'irlfact',
     description: 'Replies with a random Real Life fact',
   },
@@ -13,31 +25,19 @@ export const commands = [
   },
   {
     name: 'gif',
-    description: 'Replies with a gif from the ones it has learned COULD BE NSFW!'
+    description: 'Replies with a gif from the ones it has learned'
   },
   {
     name: 'image',
-    description: 'Replies with an image from the ones it has learned COULD BE NSFW!'
+    description: 'Replies with an image from the ones it has learned'
   },
   {
     name: 'video',
-    description: 'Replies with an video/youtube link from the ones it has learned COULD BE NSFW!'
-  },
-  {
-    name: 'providetraining',
-    description: 'Memorizes all the messages of the SERVER and uses them as training data',
-  },
-  {
-    name: 'resettraining',
-    description: 'Deletes all memorized messages, will make me learn from new messages only',
+    description: 'Replies with a video from the ones it has learned'
   },
   {
     name: 'replyrate',
     description: 'Shows the current reply rate',
-  },
-  {
-    name: 'analytics',
-    description: 'Shows data about the state of the bot',
   },
   {
     name: 'setreplyrate',
@@ -63,4 +63,8 @@ export const commands = [
       }
     ]
   },
+  {
+    name: 'analytics',
+    description: 'Shows data about the state of the bot',
+  }
 ];
