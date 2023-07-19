@@ -204,3 +204,7 @@ process.on('SIGTERM', async () => {
   await logChannel.send('Rolando has been shut down') */
   process.exit(0)
 })
+
+process.on('uncaughtException', (error: Error) => {
+  console.log('An unexpected error occurred:', error.message);
+});
