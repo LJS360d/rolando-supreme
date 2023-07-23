@@ -24,30 +24,29 @@ import { options } from './Options';
 require('dotenv').config();
 const TOKEN = process.env['TOKEN'];
 
-
 export const client = new Client(options);
 export const dataRetriever = new DataRetriever()
 
-client.on('ready', () => {
-  refreshCommands().then(() => { console.log('Successfully reloaded application (/) commands.') })
+client.on('ready', async () => {
   console.log(`Logged in as ${client.user!.tag}!`);
-  const guilds = client.guilds.cache
+  await refreshCommands();
+  console.log('Successfully reloaded application (/) commands.');
+  const guilds = client.guilds.cache;
   guilds.forEach((guild: Guild) => {
     chainsMap.set(guild.id, new MarkovChain())
-    const previousData = FileManager.getPreviousTrainingDataForGuild(guild.id)
+    const previousData = FileManager.getPreviousTrainingDataForGuild(guild.id);
     if (previousData !== null) {
-      console.log(`Loading previous data for guild:${guild.name}`);
-      //load data into markovchain
-      chainsMap.get(guild.id)!.provideData(previousData)
-      chainsMap.get(guild.id)!.replyRate = (FileManager.getReplyRate(guild.id) ?? 10)
-      console.log(`Loaded ${previousData.length} messages into MarkovChain for guild:${guild.name}`);
-
+      // Load data into markovchain
+      chainsMap.get(guild.id)!.provideData(previousData);
+      chainsMap.get(guild.id)!.replyRate = (FileManager.getReplyRate(guild.id) ?? 10);
+      console.log(`Loaded ${previousData.length} messages for guild:${guild.name}`);
     } else
       console.log(`No previous data found for guild:${guild.name}`);
-    //dataRetriever.fetchAndStoreAllMessagesInGuild(guild)
-
   })
   console.log(`Started ${chainsMap.size} Chains`);
+  // Once chains are loaded start the admin server
+  startAdminServer();
+
   async function refreshCommands(): Promise<void> {
     try {
       console.log('Started refreshing application (/) commands.');
@@ -161,21 +160,21 @@ client.on('interactionCreate', async function (interaction: ButtonInteraction) {
 
 client.on('messageCreate', async (msg: Message) => {
   if (msg.author !== client.user) {
-    const guildId = msg.guild.id
-    const chain = chainsMap.get(guildId)!
+    const guildId = msg.guild.id;
+    const chain = chainsMap.get(guildId)!;
     if (msg.content) {
-      FileManager.appendMessageToFile(msg.content, guildId)
-      chain.updateState(msg.content)
+      FileManager.appendMessageToFile(msg.content, guildId);
+      chain.updateState(msg.content);
     }
 
-    const pingCondition: boolean = (msg.content.includes(`<@${client.user!.id}>`))
-    const randomRate: boolean = (chain.replyRate === 1) ? true :
+    const pingCondition: boolean = (msg.content.includes(`<@${client.user!.id}>`));
+    const shouldReply: boolean = (chain.replyRate === 1 || pingCondition) ? true :
       chain.replyRate === 0 ? false :
         ((Math.floor(Math.random() * chain.replyRate) + 1 === 1));
 
-    if (pingCondition || randomRate) {
+    if (shouldReply) {
       // 4 to 25
-      const random = Math.floor(Math.random() * 21) + 4;
+      const random = Math.floor(Math.random() * 22) + 4;
       // 95% Plain message, 5% Gif/Img/Vid
       const reply = (random <= 24)
         ? chain.talk(random)
@@ -189,19 +188,15 @@ client.on('messageCreate', async (msg: Message) => {
 
 client.login(TOKEN);
 
-startAdminServer()
-
 process.on('SIGINT', async () => {
   console.log('Received SIGINT signal. Shutting down gracefully...');
-  /* const logChannel = (client.guilds.cache.get('1119326293255786596').channels.cache.get('1120120129578090586') as GuildTextBasedChannel);
-  await logChannel.send('Rolando has been shut down') */
+
   process.exit(0)
 })
 
 process.on('SIGTERM', async () => {
   console.log('Received SIGTERM signal. Shutting down gracefully...');
-  /* const logChannel = (client.guilds.cache.get('1119326293255786596').channels.cache.get('1120120129578090586') as GuildTextBasedChannel);
-  await logChannel.send('Rolando has been shut down') */
+
   process.exit(0)
 })
 

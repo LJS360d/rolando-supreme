@@ -9,18 +9,22 @@ import {
 import { FileManager } from './FileManager';
 import { client } from './main';
 
+type fetchingStatus = { fetching: boolean, guildNames: string[] };
 export class DataRetriever {
-    constructor(){}
+
+    static fetchStatus: fetchingStatus = { fetching: false, guildNames: [] };
+    constructor() { }
 
     async fetchAndStoreAllMessagesInGuild(guild: Guild): Promise<void> {
         return new Promise(async (resolve) => {
             const channelPromises: Promise<void>[] = [];
             guild.channels.cache.forEach(async (channel: BaseChannel) => {
                 try {
-                    const canReadChannel = (channel as GuildTextBasedChannel).permissionsFor(client.user).has(PermissionFlagsBits.ReadMessageHistory)
-                    const canAccessChannel = (channel as GuildTextBasedChannel).permissionsFor(client.user).has(PermissionFlagsBits.SendMessages)
-                    const canViewChannel = (channel as GuildTextBasedChannel).permissionsFor(client.user).has(PermissionFlagsBits.ViewChannel)
-                    const isValidChannel = (!channel.isVoiceBased() && channel.isTextBased() && canReadChannel && canAccessChannel && canViewChannel)
+                    const permissions = (channel as GuildTextBasedChannel).permissionsFor(client.user);
+                    const canReadChannel = permissions.has(PermissionFlagsBits.ReadMessageHistory);
+                    const canAccessChannel = permissions.has(PermissionFlagsBits.SendMessages);
+                    const canViewChannel = permissions.has(PermissionFlagsBits.ViewChannel);
+                    const isValidChannel = channel.isTextBased() && !channel.isVoiceBased() && canReadChannel && canAccessChannel && canViewChannel;
 
                     if (isValidChannel) {
                         //Gives the channel to be iterated for message fetching
@@ -30,12 +34,18 @@ export class DataRetriever {
                             guild.id
                         );
                         channelPromises.push(channelPromise);
+                        DataRetriever.fetchStatus.fetching = true;
+                        DataRetriever.fetchStatus.guildNames.push(guild.name);
+
                     }
                 } catch (error) {
                     console.error(`Error accessing channel`);
                 }
             })
             await Promise.all(channelPromises);
+            DataRetriever.fetchStatus.guildNames.splice(DataRetriever.fetchStatus.guildNames.indexOf(guild.name),1)
+            DataRetriever.fetchStatus.fetching = !!DataRetriever.fetchStatus.guildNames.length;
+
             resolve();
         });
     }
@@ -43,7 +53,7 @@ export class DataRetriever {
     async fetchAndStoreAllMessagesInChannel(channel: GuildTextBasedChannel, fileName: string): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
-                const MSG_LIMIT = 250000;
+                const MSG_LIMIT = 500000;
                 const messages: string[] = [];
                 let lastMessageID: string | undefined | null = null;
                 let remaining = true;

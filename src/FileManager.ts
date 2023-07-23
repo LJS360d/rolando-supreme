@@ -13,7 +13,7 @@ export class FileManager {
 
   static getPreviousTrainingDataForGuild(guildId: string): string[] | null {
     //check if file guildId.dt exists
-    if (FileManager.fileExists(`${DATA_FOLDER}${guildId}.dt`))
+    if (this.guildHasPreviousData(guildId))
       return FileManager.readMessagesFromFile(guildId);
     return null;
 
@@ -94,41 +94,4 @@ export class FileManager {
 
     return undefined; // Return undefined if the guildId is not found
   }
-  /* appendMessagesToFileNoDuplicates(messages: string[], filePath: PathLike) {
-    const uniqueMessages = new Set(messages);
-
-    open(filePath, 'a', (err, fd) => {
-      if (err) {
-        console.error(`Error opening file: ${err}`);
-      } else {
-        let linesWritten = 0;
-
-        const writeNextLine = () => {
-          if (linesWritten < uniqueMessages.size) {
-            const message = Array.from(uniqueMessages)[linesWritten];
-            const line = message + '\n';
-
-            write(fd, line, (writeErr) => {
-              if (writeErr) {
-                console.error(`Error writing to file: ${writeErr}`);
-              } else {
-                linesWritten++;
-                writeNextLine(); // Write the next line recursively
-              }
-            });
-          } else {
-            close(fd, (closeErr) => {
-              if (closeErr) {
-                console.error(`Error closing file: ${closeErr}`);
-              } else {
-                console.log('File write completed.');
-              }
-            });
-          }
-        };
-
-        writeNextLine(); // Start writing lines recursively
-      }
-    });
-  } */
 }

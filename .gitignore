@@ -1,7 +1,15 @@
 src/tests
 train_data/**
 package-lock.json
-# Logs
+# Ignore all files inside the 'public/' directory
+/public/*
+
+# Except the 'public/css' directory itself
+!/public/css/
+
+# Also, except all files inside the 'public/css' directory
+!/public/css/*
+
 logs
 *.log
 npm-debug.log*
