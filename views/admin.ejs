@@ -30,9 +30,9 @@
             <li>
                 <% chain=chains.get(guild.id)%>
                     <div class="guild-wrapper">
-                        <b>
+                        <a href="<%=`/${guild.name.toLowerCase().replace(/ /g,'_')}`%>">
                             <%= guild.name %>
-                        </b>
+                        </a>
                         <img class="guild-icon" src="<%=guild.iconURL()%>">
                         <span>
                             <%= guild.memberCount%> members

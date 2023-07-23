@@ -26,7 +26,12 @@ export function startAdminServer() {
         };
         res.render('admin', props);
     });
-
+    console.log("Started endpoints for chains");
+    client.guilds.cache.forEach(guild => {        
+        app.get(`/${guild.name.toLowerCase().replace(/ /g,'_')}`, (req: Request, res: Response) => {
+            res.json(chainsMap.get(guild.id)!)
+        })
+    })
 
     //const PORT: number | string = process.env.PORT || 8080;
     const PORT: number = 8080;
