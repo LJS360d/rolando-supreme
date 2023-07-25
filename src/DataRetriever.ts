@@ -70,7 +70,7 @@ export class DataRetriever {
 
                     // Add messages to the array
                     messageBatch.forEach((msg: Message) => {
-                        if (msg.content) {
+                        if (msg.content && !msg.author.bot) {
                             //check if msg has a working URL
                             const message: string = (containsWorkingURL(msg.content)) ? msg.content : msg.content.toLowerCase();
                             messages.push(message);
