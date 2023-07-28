@@ -217,4 +217,10 @@ export class InteractionManager {
             console.log('An error occurred:', error);
         }
     }
+
+    static async getOpinion(interaction: ChatInputCommandInteraction, seed: string) {
+        const random = Math.floor(Math.random() * 22) + 4;
+        const reply = chainsMap.get(interaction.guild.id).generateText(seed,random);
+        await interaction.reply(reply);
+    }
 }

@@ -24,6 +24,18 @@ export const commands = [
     description: 'pings a random user'
   },
   {
+    name: 'opinion',
+    description: 'Get a reply with a specific word as the seed',
+    options: [
+      {
+        name: 'about',
+        description: "The seed of the message",
+        type: 3, //String type
+        required: true,
+      }
+    ]
+  },
+  {
     name: 'gif',
     description: 'Replies with a gif from the ones it has learned'
   },

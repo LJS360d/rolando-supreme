@@ -119,6 +119,10 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
         await InteractionManager.help(interaction);
         break;
 
+      case 'opinion':
+        await InteractionManager.getOpinion(interaction,interaction.options.getString('about'));
+        break;
+
       case 'gif':
         await interaction.reply(await chain.getGif());
         break;
