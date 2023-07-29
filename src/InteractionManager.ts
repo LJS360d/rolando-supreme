@@ -219,8 +219,9 @@ export class InteractionManager {
     }
 
     static async getOpinion(interaction: ChatInputCommandInteraction, seed: string) {
+        const word = seed.split(' ').at(-1) as string;
         const random = Math.floor(Math.random() * 22) + 4;
-        const reply = chainsMap.get(interaction.guild.id).generateText(seed,random);
+        const reply = chainsMap.get(interaction.guild.id).generateText(word,random);
         await interaction.reply(reply);
     }
 }
