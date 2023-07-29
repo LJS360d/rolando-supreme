@@ -222,6 +222,6 @@ export class InteractionManager {
         const word = seed.split(' ').at(-1) as string;
         const random = Math.floor(Math.random() * 22) + 4;
         const reply = chainsMap.get(interaction.guild.id).generateText(word,random);
-        await interaction.reply(reply);
+        await interaction.reply(`${seed.replace(word,'')}${reply}`);
     }
 }
