@@ -1,4 +1,6 @@
-export const commands = [
+import { ApplicationCommandDataResolvable } from 'discord.js';
+
+export const commands: ApplicationCommandDataResolvable[] = [
   {
     name: 'help',
     description: 'Shows available commands'

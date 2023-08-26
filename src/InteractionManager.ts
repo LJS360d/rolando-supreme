@@ -13,11 +13,6 @@ import { FileManager } from './FileManager';
 import { dataRetriever } from './main';
 import { chainsMap } from './MarkovChain';
 
-export const JOIN_LABEL =
-    `Hello, i'm Rolando.\n
-I learn to type from the messages you send in chat\n
-Run \`/providetraining\` to make me learn from all previous messages.\n
-The more messages there are in the server, the more it will make me _intelligent_.`
 export class InteractionManager {
     static async getTrainingData(interaction: ChatInputCommandInteraction | ButtonInteraction) {
         await interaction.reply({

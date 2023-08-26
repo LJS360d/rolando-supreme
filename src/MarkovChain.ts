@@ -1,10 +1,11 @@
 import axios from 'axios';
 
 import { FileManager } from './FileManager';
+import { USE_THRESHOLD } from './static/Static';
 
 /**
  * `key`: Guild ID 
- * `value`: new MarkovChain
+ * `value`: MarkovChain
  */
 export const chainsMap = new Map<string, MarkovChain>();
 
@@ -145,7 +146,6 @@ export class MarkovChain {
     }
 
     getComplexity(): number {
-        const USE_THRESHOLD = 15
         const stateSize = Object.keys(this.state).length;
         let highValueWords = 0;
 

@@ -7,7 +7,7 @@ import {
   writeFileSync,
 } from 'fs';
 
-const DATA_FOLDER: PathLike = './train_data/';
+import { DATA_FOLDER } from './static/Static';
 
 export class FileManager {
 

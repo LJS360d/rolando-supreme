@@ -1,6 +1,9 @@
-import { GatewayIntentBits as intents } from 'discord.js';
+import {
+  ClientOptions,
+  GatewayIntentBits as intents,
+} from 'discord.js';
 
-export const options = {
+export const options: ClientOptions = {
     intents: [
         //intents.AutoModerationConfiguration,
         //intents.AutoModerationExecution,

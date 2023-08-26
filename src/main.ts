@@ -10,19 +10,16 @@ import { startAdminServer } from './AdminServer';
 import { commands } from './Commands';
 import { DataRetriever } from './DataRetriever';
 import { FileManager } from './FileManager';
-import {
-  InteractionManager,
-  JOIN_LABEL,
-} from './InteractionManager';
+import { InteractionManager } from './InteractionManager';
 import {
   chainsMap,
   MarkovChain,
 } from './MarkovChain';
 import { options } from './Options';
+import { JOIN_LABEL } from './static/Static';
 
 // Import dotenv to load environment variables from .env file
 require('dotenv').config();
-const TOKEN = process.env['TOKEN'];
 
 export const client = new Client(options);
 export const dataRetriever = new DataRetriever()
@@ -120,7 +117,7 @@ client.on('interactionCreate', async function (interaction: ChatInputCommandInte
         break;
 
       case 'opinion':
-        await InteractionManager.getOpinion(interaction,interaction.options.getString('about'));
+        await InteractionManager.getOpinion(interaction, interaction.options.getString('about'));
         break;
 
       case 'gif':
@@ -190,7 +187,7 @@ client.on('messageCreate', async (msg: Message) => {
   }
 })
 
-client.login(TOKEN);
+client.login(process.env['TOKEN']);
 
 process.on('SIGINT', async () => {
   console.log('Received SIGINT signal. Shutting down gracefully...');

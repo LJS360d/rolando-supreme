@@ -1,9 +1,10 @@
 src/tests
 train_data/**
 package-lock.json
+pnpm-lock.yaml
 # Ignore all files inside the 'public/' directory
 /public/*
-
+Token.txt
 # Except the 'public/css' directory itself
 !/public/css/
 

@@ -8,11 +8,13 @@ import {
 
 import { FileManager } from './FileManager';
 import { client } from './main';
+import { MSG_LIMIT } from './static/Static';
+import { containsWorkingURL } from './utils/Utils';
 
-type fetchingStatus = { fetching: boolean, guildNames: string[] };
+type fetchingStatus = { fetching: boolean, channelNames: string[] };
 export class DataRetriever {
 
-    static fetchStatus: fetchingStatus = { fetching: false, guildNames: [] };
+    static fetchStatus: fetchingStatus = { fetching: false, channelNames: [] };
     constructor() { }
 
     async fetchAndStoreAllMessagesInGuild(guild: Guild): Promise<void> {
@@ -35,16 +37,16 @@ export class DataRetriever {
                         );
                         channelPromises.push(channelPromise);
                         DataRetriever.fetchStatus.fetching = true;
-                        DataRetriever.fetchStatus.guildNames.push(guild.name);
+                        DataRetriever.fetchStatus.channelNames.push(`#${(channel as GuildTextBasedChannel).name}`);
 
                     }
                 } catch (error) {
-                    console.error(`Error accessing channel`);
+                    console.log(`Error accessing channel: ${(channel as GuildTextBasedChannel).name}`);
                 }
             })
             await Promise.all(channelPromises);
-            DataRetriever.fetchStatus.guildNames.splice(DataRetriever.fetchStatus.guildNames.indexOf(guild.name),1)
-            DataRetriever.fetchStatus.fetching = !!DataRetriever.fetchStatus.guildNames.length;
+            DataRetriever.fetchStatus.channelNames = [];
+            DataRetriever.fetchStatus.fetching = false;
 
             resolve();
         });
@@ -53,7 +55,6 @@ export class DataRetriever {
     async fetchAndStoreAllMessagesInChannel(channel: GuildTextBasedChannel, fileName: string): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
-                const MSG_LIMIT = 500000;
                 const messages: string[] = [];
                 let lastMessageID: string | undefined | null = null;
                 let remaining = true;
@@ -90,24 +91,3 @@ export class DataRetriever {
         });
     }
 }
-
-export function containsWorkingURL(string: string) {
-    const urlRegex = /(https?|ftp):\/\/[^\s/$.?#].[^\s]*/;
-    const matches = string.match(urlRegex);
-
-    if (matches) {
-        for (const url of matches) {
-            try {
-                const { protocol } = new URL(url);
-                if (protocol === 'http:' || protocol === 'https:') {
-                    return true;
-                }
-            } catch (error) {
-                // Ignore invalid URLs
-            }
-        }
-    }
-
-    return false;
-}
-
