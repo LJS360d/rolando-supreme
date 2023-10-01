@@ -1,3 +1,4 @@
+import { log } from 'console';
 import {
   ButtonInteraction,
   ChatInputCommandInteraction,
@@ -17,6 +18,7 @@ import {
 } from './MarkovChain';
 import { options } from './Options';
 import { JOIN_LABEL } from './static/Static';
+import { getRandom } from './utils/Utils';
 
 // Import dotenv to load environment variables from .env file
 require('dotenv').config();
@@ -25,9 +27,9 @@ export const client = new Client(options);
 export const dataRetriever = new DataRetriever()
 
 client.on('ready', async () => {
-  console.log(`Logged in as ${client.user!.tag}!`);
+  log(`Logged in as ${client.user!.tag}!`);
   await refreshCommands();
-  console.log('Successfully reloaded application (/) commands.');
+  log('Successfully reloaded application (/) commands.');
   const guilds = client.guilds.cache;
   guilds.forEach((guild: Guild) => {
     chainsMap.set(guild.id, new MarkovChain())
@@ -36,19 +38,19 @@ client.on('ready', async () => {
       // Load data into markovchain
       chainsMap.get(guild.id)!.provideData(previousData);
       chainsMap.get(guild.id)!.replyRate = (FileManager.getReplyRate(guild.id) ?? 10);
-      console.log(`Loaded ${previousData.length} messages for guild:${guild.name}`);
+      log(`Loaded ${previousData.length} messages for guild:${guild.name}`);
     } else
-      console.log(`No previous data found for guild:${guild.name}`);
+      log(`No previous data found for guild:${guild.name}`);
   })
-  console.log(`Started ${chainsMap.size} Chains`);
+  log(`Started ${chainsMap.size} Chains`);
   // Once chains are loaded start the admin server
   startAdminServer();
 
   async function refreshCommands(): Promise<void> {
     try {
-      console.log('Started refreshing application (/) commands.');
+      log('Started refreshing application (/) commands.');
       await client.application?.commands.set(commands);
-    } catch (error) { console.error(error) }
+    } catch (error) { error(error) }
   }
 })
 client.on('guildCreate', (guild: Guild) => {
@@ -168,14 +170,16 @@ client.on('messageCreate', async (msg: Message) => {
       chain.updateState(msg.content);
     }
 
-    const pingCondition: boolean = (msg.content.includes(`<@${client.user!.id}>`));
-    const shouldReply: boolean = (chain.replyRate === 1 || pingCondition) ? true :
-      chain.replyRate === 0 ? false :
-        ((Math.floor(Math.random() * chain.replyRate) + 1 === 1));
+    const pingCondition: boolean = msg.content.includes(`<@${client.user!.id}>`);
+    // 1/replyRate chance to reply
+    const shouldReply: boolean =
+      chain.replyRate === 1 || pingCondition
+        ? true : chain.replyRate === 0
+          ? false : getRandom(1,chain.replyRate) === 1;
 
     if (shouldReply) {
       // 4 to 25
-      const random = Math.floor(Math.random() * 22) + 4;
+      const random = getRandom(4,25);
       // 95% Plain message, 5% Gif/Img/Vid
       const reply = (random <= 24)
         ? chain.talk(random)
@@ -185,22 +189,22 @@ client.on('messageCreate', async (msg: Message) => {
       await msg.channel.send(reply);
     }
   }
-})
+});
 
 client.login(process.env['TOKEN']);
 
 process.on('SIGINT', async () => {
-  console.log('Received SIGINT signal. Shutting down gracefully...');
+  log('Received SIGINT signal. Shutting down gracefully...');
 
   process.exit(0)
 })
 
 process.on('SIGTERM', async () => {
-  console.log('Received SIGTERM signal. Shutting down gracefully...');
+  log('Received SIGTERM signal. Shutting down gracefully...');
 
   process.exit(0)
 })
 
 process.on('uncaughtException', (error: Error) => {
-  console.log('An unexpected error occurred:', error.message);
+  log('An unexpected error occurred:', error.message);
 });
