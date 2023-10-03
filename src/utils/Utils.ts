@@ -1,4 +1,4 @@
-import { HieroglyphsMap } from '../static/HieroglyphsEnum';
+import { HieroglyphsMap, InvertedHieroglyphsMap } from '../static/Hieroglyphs';
 
 export function containsWorkingURL(string: string) {
 	const urlRegex = /(https?|ftp):\/\/[^\s/$.?#].[^\s]*/;
@@ -35,5 +35,13 @@ export function toHieroglyphs(str: string): string {
 		.toLowerCase()
 		.split('')
 		.map((char) => HieroglyphsMap.get(char) ?? char)
+		.join('');
+}
+
+export function backToAlphabet(str: string): string {
+	return str
+		.toLowerCase()
+		.split('')
+		.map((char) => InvertedHieroglyphsMap.get(char) ?? char)
 		.join('');
 }
