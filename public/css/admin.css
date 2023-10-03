@@ -1,93 +1,95 @@
-@import url("https://fonts.cdnfonts.com/css/montserrat");
+@import url('https://fonts.cdnfonts.com/css/montserrat');
 body {
-  font-family: "Montserrat", sans-serif;
-  margin: 0;
-  padding: 20px;
-  background-color: #f5f5f5;
-  overflow: hidden;
+	font-family: 'Montserrat', sans-serif;
+	margin: 0;
+	padding: 20px;
+	background-color: #f5f5f5;
+	overflow: hidden;
 }
 body #version {
-  margin: inherit;
-  padding: inherit;
-  position: absolute;
-  top: 0;
-  left: 0;
+	margin: inherit;
+	padding: inherit;
+	position: absolute;
+	top: 0;
+	left: 0;
 }
 body h1 {
-  color: #333;
-  font-size: 32px;
-  margin-bottom: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+	color: #333;
+	font-size: 32px;
+	margin-bottom: 20px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 body h2 {
-  color: #777;
-  font-size: 24px;
-  margin-bottom: 10px;
+	color: #777;
+	font-size: 24px;
+	margin-bottom: 10px;
 }
 body lb {
-  font-weight: 600;
+	font-weight: 600;
 }
 body ul {
-  list-style: none;
-  padding: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 0.5rem;
-  height: 75vh;
-  display: flex;
+	list-style: none;
+	padding: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	gap: 0.5rem;
+	height: 75vh;
+	display: flex;
 }
 body ul li {
-  background-color: #fff;
-  padding: 10px;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  height: -moz-min-content;
-  height: min-content;
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  justify-content: space-between;
+	background-color: #fff;
+	padding: 10px;
+	border-radius: 4px;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+	height: -moz-min-content;
+	height: min-content;
+	display: flex;
+	align-items: center;
+	gap: 2rem;
+	justify-content: space-between;
 }
 body ul li div {
-  gap: 0.5rem;
-  display: flex;
+	gap: 0.5rem;
+	display: flex;
 }
 body ul li .guild-wrapper {
-  min-width: 8.5rem;
-  display: flex;
-  flex-direction: column;
-  font-size: 0.9pc;
-  align-items: flex-start;
+	min-width: 8.5rem;
+	display: flex;
+	flex-direction: column;
+	font-size: 0.9pc;
+	align-items: flex-start;
 }
 body ul li .guild-wrapper a {
-  text-decoration: none;
-  font-weight: 600;
-  width: -moz-max-content;
-  width: max-content;
-  color: black;
+	text-decoration: none;
+	font-weight: 600;
+	width: -moz-max-content;
+	width: max-content;
+	color: black;
 }
-body ul li .guild-wrapper a:hover, body ul li .guild-wrapper a:active, body ul li .guild-wrapper a:focus {
-  color: black;
+body ul li .guild-wrapper a:hover,
+body ul li .guild-wrapper a:active,
+body ul li .guild-wrapper a:focus {
+	color: black;
 }
 body ul li .chain-wrapper {
-  width: 100%;
-  font-size: 0.9pc;
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
+	width: 100%;
+	font-size: 0.9pc;
+	display: flex;
+	align-items: flex-start;
+	flex-direction: column;
 }
 
 img.guild-icon {
-  height: 5rem;
-  aspect-ratio: 1;
+	height: 5rem;
+	aspect-ratio: 1;
 }
 
 span,
 b {
-  width: -moz-max-content;
-  width: max-content;
+	width: -moz-max-content;
+	width: max-content;
 }

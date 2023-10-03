@@ -4,13 +4,14 @@ package-lock.json
 pnpm-lock.yaml
 # Ignore all files inside the 'public/' directory
 /public/*
-Token.txt
+Invite_url.txt
 # Except the 'public/css' directory itself
 !/public/css/
 
 # Also, except all files inside the 'public/css' directory
 !/public/css/*
-
+tests
+test
 logs
 *.log
 npm-debug.log*

@@ -1,34 +1,36 @@
 {
-  "name": "rolando",
-  "version": "0.9.2",
-  "description": "",
-  "private": "true",
-  "type": "commonjs",
-  "scripts": {
-    "test": "ts-node-dev ./src/tests/test.ts",
-    "dev": "ts-node-dev ./src/main.ts",
-    "start": "ts-node ./src/main.ts",
-    "build": "webpack --config webpack.config.js --mode production"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "ts-node": "^10.9.1",
-    "tsc": "^2.0.4",
-    "typescript": "^5.2.2",
-    "webpack": "^5.88.2",
-    "webpack-cli": "^5.1.4",
-    "webpack-node-externals": "^3.0.0"
-  },
-  "dependencies": {
-    "@types/express": "^4.17.17",
-    "@types/node": "^20.5.6",
-    "axios": "^1.4.0",
-    "discord.js": "^14.13.0",
-    "dotenv": "^16.3.1",
-    "ejs": "^3.1.9",
-    "express": "^4.18.2",
-    "ts-loader": "^9.4.4"
-  }
+	"name": "rolando",
+	"version": "0.10.0",
+	"description": "",
+	"private": "true",
+	"type": "commonjs",
+	"scripts": {
+		"test": "ts-node-dev ./tests/test.ts",
+		"dev": "ts-node-dev ./src/main.ts",
+		"lint": "prettier . --write",
+		"start": "ts-node ./src/main.ts",
+		"build": "webpack --config webpack.config.js --mode production"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"prettier": "^3.0.3",
+		"ts-node": "^10.9.1",
+		"tsc": "^2.0.4",
+		"typescript": "^5.2.2",
+		"webpack": "^5.88.2",
+		"webpack-cli": "^5.1.4",
+		"webpack-node-externals": "^3.0.0"
+	},
+	"dependencies": {
+		"@types/express": "^4.17.18",
+		"@types/node": "^20.8.2",
+		"axios": "^1.5.1",
+		"discord.js": "^14.13.0",
+		"dotenv": "^16.3.1",
+		"ejs": "^3.1.9",
+		"express": "^4.18.2",
+		"ts-loader": "^9.4.4"
+	}
 }
