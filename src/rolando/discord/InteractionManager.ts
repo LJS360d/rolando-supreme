@@ -8,12 +8,12 @@ import {
 	type PermissionsBitField,
 } from 'discord.js';
 
-import { FileManager } from './FileManager';
-import { dataRetriever } from './main';
-import { chainsMap, MarkovChain } from './MarkovChain';
-import { commands } from './static/Commands';
-import { PROVIDE_TRAINING_LABEL } from './static/Static';
-import { backToAlphabet, getRandom, toHieroglyphs } from './utils/Utils';
+import { FileManager } from '../domain/FileManager';
+import { dataRetriever } from '../../main';
+import { chainsMap, MarkovChain } from '../model/MarkovChain';
+import { commands } from '../../static/Commands';
+import { PROVIDE_TRAINING_LABEL } from '../../static/Static';
+import { backToAlphabet, getRandom, toHieroglyphs } from '../../utils/Utils';
 
 export class InteractionManager {
 	static async getTrainingData(

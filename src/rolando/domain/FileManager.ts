@@ -7,7 +7,7 @@ import {
 	writeFileSync,
 } from 'fs';
 
-import { DATA_FOLDER } from './static/Static';
+import { DATA_FOLDER } from '../../static/Static';
 
 export class FileManager {
 	static getPreviousTrainingDataForGuild(guildId: string): string[] | undefined {

@@ -1,8 +1,8 @@
 import { type ChatInputCommandInteraction } from 'discord.js';
 
-import { FileManager } from '../FileManager';
-import { InteractionManager } from '../InteractionManager';
-import { type MarkovChain } from '../MarkovChain';
+import { FileManager } from '../rolando/domain/FileManager';
+import { InteractionManager } from '../rolando/discord/InteractionManager';
+import { type MarkovChain } from '../rolando/model/MarkovChain';
 import { REPLYRATE_COMMAND_LABEL } from '../static/Static';
 
 type CommandInteraction = {

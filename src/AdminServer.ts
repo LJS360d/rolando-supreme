@@ -1,9 +1,9 @@
 import express, { type Request, type Response } from 'express';
 import http from 'http';
 
-import { DataRetriever } from './DataRetriever';
+import { DataRetriever } from './rolando/discord/DataRetriever';
 import { client } from './main';
-import { chainsMap } from './MarkovChain';
+import { chainsMap } from './rolando/model/MarkovChain';
 
 export function startAdminServer() {
 	const startTime = Date.now();

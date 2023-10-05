@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-import { FileManager } from './FileManager';
-import { USE_THRESHOLD } from './static/Static';
-import { getRandom, toHieroglyphs } from './utils/Utils';
+import { FileManager } from '../domain/FileManager';
+import { USE_THRESHOLD } from '../../static/Static';
+import { getRandom, toHieroglyphs } from '../../utils/Utils';
 
 /**
  * `key`: Guild ID
