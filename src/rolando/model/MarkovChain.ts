@@ -25,6 +25,7 @@ export class MarkovChain {
 	gifs: Set<string>;
 	images: Set<string>;
 	videos: Set<string>;
+	extensionMap: Map<string, Set<string>>;
 
 	constructor() {
 		this.state = {};
@@ -32,6 +33,15 @@ export class MarkovChain {
 		this.gifs = new Set<string>();
 		this.images = new Set<string>();
 		this.videos = new Set<string>();
+		this.extensionMap = new Map<string, Set<string>>([
+			['.gif', this.gifs],
+			['.png', this.images],
+			['.webp', this.images],
+			['.jpeg', this.images],
+			['.jpg', this.images],
+			['.mp4', this.videos],
+			['.mov', this.videos],
+		]);
 	}
 
 	provideData(messages: string[]): void {
@@ -42,23 +52,13 @@ export class MarkovChain {
 
 	updateState(message: string): void {
 		if (message.startsWith('https:')) {
-			if (message.endsWith('.gif')) {
-				this.gifs.add(message);
-			}
-
-			if (
-				message.endsWith('.png') ||
-				message.endsWith('.jpeg') ||
-				message.endsWith('.jpg')
-			) {
-				this.images.add(message);
-			}
-
-			if (message.endsWith('.mp4') || message.endsWith('.mov')) {
-				this.videos.add(message);
-			}
+			if (this.validateURL(message)) {
+				const extension = message.match(/\.[^.]+$/)?.[0];
+				if (extension && this.extensionMap.get(extension)) {
+					this.extensionMap.get(extension).add(message);
+				}
+			} else return;
 		}
-
 		const words = message.split(' ');
 
 		for (let i = 0; i < words.length - 1; i++) {
@@ -81,14 +81,24 @@ export class MarkovChain {
 		let currentWord = startWord;
 		let generatedText = currentWord;
 
+		const keysCache: Record<string, string[]> = {};
+		const valuesCache: Record<string, number[]> = {};
+
 		for (let i = 0; i < length; i++) {
 			const nextWords = this.state[currentWord];
 			if (!nextWords) {
 				break;
 			}
 
-			const nextWordArray = Object.keys(nextWords);
-			const nextWordWeights = Object.values(nextWords);
+			let nextWordArray = keysCache[currentWord];
+			let nextWordWeights = valuesCache[currentWord];
+
+			if (!nextWordArray || !nextWordWeights) {
+				nextWordArray = Object.keys(nextWords);
+				nextWordWeights = Object.values(nextWords);
+				keysCache[currentWord] = nextWordArray;
+				valuesCache[currentWord] = nextWordWeights;
+			}
 
 			currentWord = this.weightedRandomChoice(nextWordArray, nextWordWeights);
 			generatedText += ' ' + currentWord;
@@ -100,16 +110,26 @@ export class MarkovChain {
 	private weightedRandomChoice(options: string[], weights: number[]): string {
 		const totalWeight = weights.reduce((a, b) => a + b, 0);
 		const randomWeight = Math.random() * totalWeight;
-		let weightSum = 0;
+		let cumulativeWeight = 0;
+		const cumulativeWeights = weights.map((weight) => (cumulativeWeight += weight));
 
-		for (let i = 0; i < options.length; i++) {
-			weightSum += weights[i];
-			if (randomWeight <= weightSum) {
-				return options[i];
+		let start = 0;
+		let end = cumulativeWeights.length - 1;
+
+		while (end - start > 1) {
+			const mid = Math.floor((start + end) / 2);
+			if (cumulativeWeights[mid] > randomWeight) {
+				end = mid;
+			} else {
+				start = mid;
 			}
 		}
 
-		return options[options.length - 1];
+		if (cumulativeWeights[start] > randomWeight) {
+			return options[start];
+		} else {
+			return options[end];
+		}
 	}
 
 	getWordsByValue(value: number): string[] {
@@ -157,21 +177,16 @@ export class MarkovChain {
 		const stateSize = Object.keys(this.state).length;
 		let highValueWords = 0;
 
-		for (const currentWord in this.state) {
-			const nextWords = this.state[currentWord];
-			for (const nextWord in nextWords) {
-				const wordValue = nextWords[nextWord];
+		for (const nextWords of Object.values(this.state)) {
+			for (const wordValue of Object.values(nextWords)) {
 				if (wordValue > USE_THRESHOLD) {
-					// Threshold for what is considered a "high-value" word
 					highValueWords++;
 				}
 			}
 		}
 
 		// Calculate the complexity score based on state size and high-value words
-		const complexityScore = stateSize + highValueWords;
-
-		return complexityScore;
+		return 0.3 * (stateSize + highValueWords);
 	}
 
 	getAnalytics(): ChainAnalytics {
@@ -185,54 +200,6 @@ export class MarkovChain {
 		} as ChainAnalytics;
 	}
 
-	async getGif(): Promise<string> {
-		const gifsArray = Array.from(this.gifs);
-		while (gifsArray.length > 0) {
-			const randomIndex = Math.floor(Math.random() * gifsArray.length);
-			const gifURL = gifsArray[randomIndex];
-
-			if (await validateURL(gifURL)) {
-				return gifURL;
-			} // Valid URL
-
-			gifsArray.splice(randomIndex, 1); // Remove invalid URL from array
-		}
-
-		return 'I got no gifs in my brain'; // No valid URLs found
-	}
-
-	async getImage(): Promise<string> {
-		const imagesArray = Array.from(this.images);
-		while (imagesArray.length > 0) {
-			const randomIndex = Math.floor(Math.random() * imagesArray.length);
-			const imageURL = imagesArray[randomIndex];
-
-			if (await validateURL(imageURL)) {
-				return imageURL;
-			} // Valid URL
-
-			imagesArray.splice(randomIndex, 1); // Remove invalid URL from array
-		}
-
-		return 'I got no images in my brain'; // No valid URLs found
-	}
-
-	async getVideo(): Promise<string> {
-		const videosArray = Array.from(this.videos);
-		while (videosArray.length > 0) {
-			const randomIndex = Math.floor(Math.random() * videosArray.length);
-			const videoURL = videosArray[randomIndex];
-
-			if (await validateURL(videoURL)) {
-				return videoURL;
-			} // Valid URL
-
-			videosArray.splice(randomIndex, 1); // Remove invalid URL from array
-		}
-
-		return 'I got no videos in my brain'; // No valid URLs found
-	}
-
 	talk(length: number): string {
 		const keys = Object.keys(this.state);
 		const randomIndex = Math.floor(Math.random() * keys.length);
@@ -241,8 +208,16 @@ export class MarkovChain {
 		return getRandom(1, 200) === 200 ? toHieroglyphs(sentence) : sentence;
 	}
 
-	private filter(text: string): string {
-		return text.replace(/\\n/g, '').trim();
+	async getGif(): Promise<string> {
+		return this.getValidUrl(Array.from(this.gifs), 'gifs');
+	}
+
+	async getImage(): Promise<string> {
+		return this.getValidUrl(Array.from(this.images), 'images');
+	}
+
+	async getVideo(): Promise<string> {
+		return this.getValidUrl(Array.from(this.videos), 'videos');
 	}
 
 	delete(message: string, fileName: string): boolean {
@@ -279,13 +254,32 @@ export class MarkovChain {
 		// Also delete it from training data storage
 		return FileManager.deleteOccurrences(message, fileName);
 	}
-}
 
-async function validateURL(url: string): Promise<boolean> {
-	try {
-		const response = await axios.get(url);
-		return response.status === 200;
-	} catch (error) {
-		return false; // Invalid URL or request error
+	private filter(text: string): string {
+		return text.replace(/\\n/g, '').trim();
+	}
+
+	private async getValidUrl(urls: string[], type?: string): Promise<string> {
+		while (urls.length > 0) {
+			const randomIndex = Math.floor(Math.random() * urls.length);
+			const media = urls[randomIndex];
+
+			if (await this.validateURL(media)) {
+				return media;
+			} // Valid URL
+
+			urls.splice(randomIndex, 1); // Remove invalid URL from array
+		}
+
+		return `I got no valid ${type ?? 'URLs'} in my brain`;
+	}
+
+	private async validateURL(url: string): Promise<boolean> {
+		try {
+			const response = await axios.head(url);
+			return response.status === 200;
+		} catch (error) {
+			return false; // Invalid URL or request error
+		}
 	}
 }

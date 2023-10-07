@@ -82,8 +82,7 @@ export const commands: ApplicationCommandDataResolvable[] = [
 	},
 	{
 		name: 'hyero',
-		description:
-			'translates the given `text` to it and replies with the text translate into hieroglyphs',
+		description: 'translates the given `text` into hieroglyphs',
 		options: [
 			{
 				name: 'text',
@@ -99,7 +98,7 @@ export const commands: ApplicationCommandDataResolvable[] = [
 		options: [
 			{
 				name: 'text',
-				description: 'The string to translate',
+				description: 'The string to untranslate',
 				type: 3, // String type
 				required: true,
 			},
