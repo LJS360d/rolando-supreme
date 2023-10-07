@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { HieroglyphsMap, InvertedHieroglyphsMap } from '../static/Hieroglyphs';
 
 export function containsWorkingURL(string: string) {
@@ -44,4 +45,17 @@ export function backToAlphabet(str: string): string {
 		.split('')
 		.map((char) => InvertedHieroglyphsMap.get(char) ?? char)
 		.join('');
+}
+
+export function getUrlExtension(url: string) {
+  return url.match(/\.[^.]+$/)?.[0]
+}
+
+export async function validateUrl (url: string): Promise<boolean> {
+  try {
+    const response = await axios.head(url);
+    return response.status === 200;
+  } catch (error) {
+    return false; // Invalid URL or request error
+  }
 }

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { FileManager } from '../domain/FileManager';
 import { USE_THRESHOLD } from '../../static/Static';
-import { getRandom, toHieroglyphs } from '../../utils/Utils';
+import { getRandom, getUrlExtension, toHieroglyphs, validateUrl } from '../../utils/Utils';
 
 /**
  * `key`: Guild ID
@@ -52,8 +52,8 @@ export class MarkovChain {
 
 	updateState(message: string): void {
 		if (message.startsWith('https:')) {
-			if (this.validateURL(message)) {
-				const extension = message.match(/\.[^.]+$/)?.[0];
+			if (validateUrl(message)) {
+				const extension = getUrlExtension(message);
 				if (extension && this.extensionMap.get(extension)) {
 					this.extensionMap.get(extension).add(message);
 				}
@@ -221,23 +221,11 @@ export class MarkovChain {
 	}
 
 	delete(message: string, fileName: string): boolean {
-		// Given a message delete it from the markov chain
 		if (message.startsWith('https:')) {
-			if (message.endsWith('.gif')) {
-				this.gifs.delete(message);
-			}
-
-			if (
-				message.endsWith('.png') ||
-				message.endsWith('.jpeg') ||
-				message.endsWith('.jpg')
-			) {
-				this.images.delete(message);
-			}
-
-			if (message.endsWith('.mp4') || message.endsWith('.mov')) {
-				this.videos.delete(message);
-			}
+				const extension = getUrlExtension(message);
+				if (extension && this.extensionMap.get(extension)) {
+					this.extensionMap.get(extension).delete(message);
+				}
 		}
 
 		const words = message.split(' ');
@@ -264,7 +252,7 @@ export class MarkovChain {
 			const randomIndex = Math.floor(Math.random() * urls.length);
 			const media = urls[randomIndex];
 
-			if (await this.validateURL(media)) {
+			if (await validateUrl(media)) {
 				return media;
 			} // Valid URL
 
@@ -274,12 +262,4 @@ export class MarkovChain {
 		return `I got no valid ${type ?? 'URLs'} in my brain`;
 	}
 
-	private async validateURL(url: string): Promise<boolean> {
-		try {
-			const response = await axios.head(url);
-			return response.status === 200;
-		} catch (error) {
-			return false; // Invalid URL or request error
-		}
-	}
 }
