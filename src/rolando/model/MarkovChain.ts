@@ -81,24 +81,14 @@ export class MarkovChain {
 		let currentWord = startWord;
 		let generatedText = currentWord;
 
-		const keysCache: Record<string, string[]> = {};
-		const valuesCache: Record<string, number[]> = {};
-
 		for (let i = 0; i < length; i++) {
 			const nextWords = this.state[currentWord];
 			if (!nextWords) {
 				break;
 			}
 
-			let nextWordArray = keysCache[currentWord];
-			let nextWordWeights = valuesCache[currentWord];
-
-			if (!nextWordArray || !nextWordWeights) {
-				nextWordArray = Object.keys(nextWords);
-				nextWordWeights = Object.values(nextWords);
-				keysCache[currentWord] = nextWordArray;
-				valuesCache[currentWord] = nextWordWeights;
-			}
+			const nextWordArray = Object.keys(nextWords);
+			const nextWordWeights = Object.values(nextWords);
 
 			currentWord = this.weightedRandomChoice(nextWordArray, nextWordWeights);
 			generatedText += ' ' + currentWord;
