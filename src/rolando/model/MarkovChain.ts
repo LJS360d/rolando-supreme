@@ -159,7 +159,7 @@ export class MarkovChain {
       }
     }
     // Calculate the complexity score based on state size and high-value words
-    return 0.3 * (stateSize + highValueWords);  
+    return Math.ceil(Math.log2((stateSize * highValueWords)));  
   }
 
   getAnalytics(): ChainAnalytics {
