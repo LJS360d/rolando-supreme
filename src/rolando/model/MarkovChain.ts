@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { FileManager } from '../domain/FileManager';
 import { USE_THRESHOLD } from '../../static/Static';
-import { getRandom, toHieroglyphs } from '../../utils/Utils';
+import { getRandom, getUrlExtension, toHieroglyphs, validateUrl } from '../../utils/Utils';
 
 /**
  * `key`: Guild ID
@@ -12,280 +12,238 @@ export const chainsMap = new Map<string, MarkovChain>();
 
 type MarkovState = Record<string, Record<string, number>>;
 export type ChainAnalytics = {
-	complexityScore: number;
-	gifs: number;
-	images: number;
-	videos: number;
-	replyRate: number;
-	words: number;
+  complexityScore: number;
+  gifs: number;
+  images: number;
+  videos: number;
+  replyRate: number;
+  words: number;
 };
 export class MarkovChain {
-	public state: MarkovState;
-	public replyRate: number;
-	gifs: Set<string>;
-	images: Set<string>;
-	videos: Set<string>;
+  public state: MarkovState;
+  public replyRate: number;
+  gifs: Set<string>;
+  images: Set<string>;
+  videos: Set<string>;
+  extensionMap: Map<string, Set<string>>;
 
-	constructor() {
-		this.state = {};
-		this.replyRate = 10;
-		this.gifs = new Set<string>();
-		this.images = new Set<string>();
-		this.videos = new Set<string>();
-	}
+  constructor() {
+    this.state = {};
+    this.replyRate = 10;
+    this.gifs = new Set<string>();
+    this.images = new Set<string>();
+    this.videos = new Set<string>();
+  }
 
-	provideData(messages: string[]): void {
-		for (const message of messages) {
-			this.updateState(message);
-		}
-	}
+  provideData(messages: string[]): void {
+    for (const message of messages) {
+      this.updateState(message);
+    }
+  }
 
-	updateState(message: string): void {
-		if (message.startsWith('https:')) {
-			if (message.endsWith('.gif')) {
-				this.gifs.add(message);
-			}
+  updateState(message: string): void {
+    if (message.startsWith('https:')) {
+      const extenstion = getUrlExtension(message);
+      if (['.gif'].includes(extenstion)) 
+        this.gifs.add(message);
+      if (['.png', '.jpg','.jpeg','.webp'].includes(extenstion)) 
+        this.images.add(message);
+      if (['.mp4','.mov'].includes(extenstion)) 
+        this.videos.add(message);
+    }
 
-			if (
-				message.endsWith('.png') ||
-				message.endsWith('.jpeg') ||
-				message.endsWith('.jpg')
-			) {
-				this.images.add(message);
-			}
+    const words = message.split(' ');
 
-			if (message.endsWith('.mp4') || message.endsWith('.mov')) {
-				this.videos.add(message);
-			}
-		}
+    for (let i = 0; i < words.length - 1; i++) {
+      const currentWord = words[i];
+      const nextWord = words[i + 1];
 
-		const words = message.split(' ');
+      if (!this.state[currentWord]) {
+        this.state[currentWord] = {};
+      }
 
-		for (let i = 0; i < words.length - 1; i++) {
-			const currentWord = words[i];
-			const nextWord = words[i + 1];
+      if (!this.state[currentWord][nextWord]) {
+        this.state[currentWord][nextWord] = 1;
+      } else {
+        this.state[currentWord][nextWord]++;
+      }
+    }
+  }
 
-			if (!this.state[currentWord]) {
-				this.state[currentWord] = {};
-			}
+  generateText(startWord: string, length: number): string {
+    let currentWord = startWord;
+    let generatedText = currentWord;
 
-			if (!this.state[currentWord][nextWord]) {
-				this.state[currentWord][nextWord] = 1;
-			} else {
-				this.state[currentWord][nextWord]++;
-			}
-		}
-	}
+    for (let i = 0; i < length; i++) {
+      const nextWords = this.state[currentWord];
+      if (!nextWords) {
+        break;
+      }
 
-	generateText(startWord: string, length: number): string {
-		let currentWord = startWord;
-		let generatedText = currentWord;
+      const nextWordArray = Object.keys(nextWords);
+      const nextWordWeights = Object.values(nextWords);
 
-		for (let i = 0; i < length; i++) {
-			const nextWords = this.state[currentWord];
-			if (!nextWords) {
-				break;
-			}
+      currentWord = this.weightedRandomChoice(nextWordArray, nextWordWeights);
+      generatedText += ' ' + currentWord;
+    }
 
-			const nextWordArray = Object.keys(nextWords);
-			const nextWordWeights = Object.values(nextWords);
+    return generatedText;
+  }
 
-			currentWord = this.weightedRandomChoice(nextWordArray, nextWordWeights);
-			generatedText += ' ' + currentWord;
-		}
+  private weightedRandomChoice(options: string[], weights: number[]): string {
+    const totalWeight = weights.reduce((a, b) => a + b, 0);
+    const randomWeight = Math.random() * totalWeight;
+    let weightSum = 0;
 
-		return generatedText;
-	}
+    for (let i = 0; i < options.length; i++) {
+      weightSum += weights[i];
+      if (randomWeight <= weightSum) {
+        return options[i];
+      }
+    }
 
-	private weightedRandomChoice(options: string[], weights: number[]): string {
-		const totalWeight = weights.reduce((a, b) => a + b, 0);
-		const randomWeight = Math.random() * totalWeight;
-		let weightSum = 0;
+    return options[options.length - 1];
+  }
 
-		for (let i = 0; i < options.length; i++) {
-			weightSum += weights[i];
-			if (randomWeight <= weightSum) {
-				return options[i];
-			}
-		}
+  getWordsByValue(value: number): string[] {
+    const valuedWords: string[] = [];
+    const invertedIndex: Record<number, string[]> = {};
 
-		return options[options.length - 1];
-	}
+    // Build the inverted index
+    for (const currentWord in this.state) {
+      const nextWords = this.state[currentWord];
+      for (const nextWord in nextWords) {
+        const wordValue = nextWords[nextWord];
+        if (!invertedIndex[wordValue]) {
+          invertedIndex[wordValue] = [];
+        }
 
-	getWordsByValue(value: number): string[] {
-		const valuedWords: string[] = [];
-		const invertedIndex: Record<number, string[]> = {};
+        invertedIndex[wordValue].push(nextWord);
+      }
+    }
 
-		// Build the inverted index
-		for (const currentWord in this.state) {
-			const nextWords = this.state[currentWord];
-			for (const nextWord in nextWords) {
-				const wordValue = nextWords[nextWord];
-				if (!invertedIndex[wordValue]) {
-					invertedIndex[wordValue] = [];
-				}
+    // Retrieve words with the specified value from the inverted index
+    if (invertedIndex[value]) {
+      valuedWords.push(...invertedIndex[value]);
+    }
 
-				invertedIndex[wordValue].push(nextWord);
-			}
-		}
+    return valuedWords;
+  }
 
-		// Retrieve words with the specified value from the inverted index
-		if (invertedIndex[value]) {
-			valuedWords.push(...invertedIndex[value]);
-		}
+  getWordsHigherThanValue(value: number): string[] {
+    const valuedWords: string[] = [];
 
-		return valuedWords;
-	}
+    for (const currentWord in this.state) {
+      const nextWords = this.state[currentWord];
+      for (const nextWord in nextWords) {
+        const wordValue = nextWords[nextWord];
+        if (wordValue > value) {
+          valuedWords.push(nextWord);
+        }
+      }
+    }
 
-	getWordsHigherThanValue(value: number): string[] {
-		const valuedWords: string[] = [];
+    return valuedWords;
+  }
 
-		for (const currentWord in this.state) {
-			const nextWords = this.state[currentWord];
-			for (const nextWord in nextWords) {
-				const wordValue = nextWords[nextWord];
-				if (wordValue > value) {
-					valuedWords.push(nextWord);
-				}
-			}
-		}
+  getComplexity(): number {
+    const stateSize = Object.keys(this.state).length;
+    let highValueWords = 0;
 
-		return valuedWords;
-	}
 
-	getComplexity(): number {
-		const stateSize = Object.keys(this.state).length;
-		let highValueWords = 0;
+    for (const nextWords of Object.values(this.state)) {
+      for (const wordValue of Object.values(nextWords)) {
+        if (wordValue > USE_THRESHOLD) {
+          highValueWords++;
+        }
+      }
+    }
+    // Calculate the complexity score based on state size and high-value words
+    return 0.3 * (stateSize + highValueWords);  
+  }
 
-		for (const currentWord in this.state) {
-			const nextWords = this.state[currentWord];
-			for (const nextWord in nextWords) {
-				const wordValue = nextWords[nextWord];
-				if (wordValue > USE_THRESHOLD) {
-					// Threshold for what is considered a "high-value" word
-					highValueWords++;
-				}
-			}
-		}
+  getAnalytics(): ChainAnalytics {
+    return {
+      complexityScore: this.getComplexity(),
+      gifs: this.gifs.size,
+      images: this.images.size,
+      videos: this.videos.size,
+      replyRate: this.replyRate,
+      words: Object.keys(this.state).length,
+    } as ChainAnalytics;
+  }
 
-		// Calculate the complexity score based on state size and high-value words
-		const complexityScore = stateSize + highValueWords;
+  async getGif(): Promise<string> {
+    return this.getValidUrl(Array.from(this.gifs), 'gifs');
+  }
 
-		return complexityScore;
-	}
+  async getImage(): Promise<string> {
+    return this.getValidUrl(Array.from(this.images), 'images');
+  }
 
-	getAnalytics(): ChainAnalytics {
-		return {
-			complexityScore: this.getComplexity(),
-			gifs: this.gifs.size,
-			images: this.images.size,
-			videos: this.videos.size,
-			replyRate: this.replyRate,
-			words: Object.keys(this.state).length,
-		} as ChainAnalytics;
-	}
+  async getVideo(): Promise<string> {
+    return this.getValidUrl(Array.from(this.videos), 'videos');
+  }
 
-	async getGif(): Promise<string> {
-		const gifsArray = Array.from(this.gifs);
-		while (gifsArray.length > 0) {
-			const randomIndex = Math.floor(Math.random() * gifsArray.length);
-			const gifURL = gifsArray[randomIndex];
+  talk(length: number): string {
+    const keys = Object.keys(this.state);
+    const randomIndex = Math.floor(Math.random() * keys.length);
+    const starterWord = keys[randomIndex];
+    const sentence = this.filter(this.generateText(starterWord, length));
+    return getRandom(1, 200) === 200 ? toHieroglyphs(sentence) : sentence;
+  }
 
-			if (await validateURL(gifURL)) {
-				return gifURL;
-			} // Valid URL
+  delete(message: string, fileName: string): boolean {
+    // Given a message delete it from the markov chain
+    if (message.startsWith('https:')) {
+      if (message.endsWith('.gif')) {
+        this.gifs.delete(message);
+      }
 
-			gifsArray.splice(randomIndex, 1); // Remove invalid URL from array
-		}
+      if (
+        message.endsWith('.png') ||
+        message.endsWith('.jpeg') ||
+        message.endsWith('.jpg')
+      ) {
+        this.images.delete(message);
+      }
 
-		return 'I got no gifs in my brain'; // No valid URLs found
-	}
+      if (message.endsWith('.mp4') || message.endsWith('.mov')) {
+        this.videos.delete(message);
+      }
+    }
 
-	async getImage(): Promise<string> {
-		const imagesArray = Array.from(this.images);
-		while (imagesArray.length > 0) {
-			const randomIndex = Math.floor(Math.random() * imagesArray.length);
-			const imageURL = imagesArray[randomIndex];
+    const words = message.split(' ');
+    for (let i = 0; i < words.length - 1; i++) {
+      const currentWord = words[i];
+      const nextWord = words[i + 1];
+      if (this.state[currentWord]) {
+        if (this.state[currentWord][nextWord]) {
+          this.state[currentWord][nextWord]--;
+        }
+      }
+    }
 
-			if (await validateURL(imageURL)) {
-				return imageURL;
-			} // Valid URL
+    // Also delete it from training data storage
+    return FileManager.deleteOccurrences(message, fileName);
+  }
 
-			imagesArray.splice(randomIndex, 1); // Remove invalid URL from array
-		}
+  private filter(text: string): string {
+    return text.replace(/\\n/g, '').trim();
+  }
 
-		return 'I got no images in my brain'; // No valid URLs found
-	}
+  private async getValidUrl(urls: string[], type?: string): Promise<string> {
+    while (urls.length > 0) {
+      const randomIndex = Math.floor(Math.random() * urls.length);
+      const media = urls[randomIndex];
 
-	async getVideo(): Promise<string> {
-		const videosArray = Array.from(this.videos);
-		while (videosArray.length > 0) {
-			const randomIndex = Math.floor(Math.random() * videosArray.length);
-			const videoURL = videosArray[randomIndex];
+      if (await validateUrl(media)) {
+        return media;
+      } // Valid URL
 
-			if (await validateURL(videoURL)) {
-				return videoURL;
-			} // Valid URL
+      urls.splice(randomIndex, 1); // Remove invalid URL from array
+    }
 
-			videosArray.splice(randomIndex, 1); // Remove invalid URL from array
-		}
-
-		return 'I got no videos in my brain'; // No valid URLs found
-	}
-
-	talk(length: number): string {
-		const keys = Object.keys(this.state);
-		const randomIndex = Math.floor(Math.random() * keys.length);
-		const starterWord = keys[randomIndex];
-		const sentence = this.filter(this.generateText(starterWord, length));
-		return getRandom(1, 200) === 200 ? toHieroglyphs(sentence) : sentence;
-	}
-
-	private filter(text: string): string {
-		return text.replace(/\\n/g, '').trim();
-	}
-
-	delete(message: string, fileName: string): boolean {
-		// Given a message delete it from the markov chain
-		if (message.startsWith('https:')) {
-			if (message.endsWith('.gif')) {
-				this.gifs.delete(message);
-			}
-
-			if (
-				message.endsWith('.png') ||
-				message.endsWith('.jpeg') ||
-				message.endsWith('.jpg')
-			) {
-				this.images.delete(message);
-			}
-
-			if (message.endsWith('.mp4') || message.endsWith('.mov')) {
-				this.videos.delete(message);
-			}
-		}
-
-		const words = message.split(' ');
-		for (let i = 0; i < words.length - 1; i++) {
-			const currentWord = words[i];
-			const nextWord = words[i + 1];
-			if (this.state[currentWord]) {
-				if (this.state[currentWord][nextWord]) {
-					this.state[currentWord][nextWord]--;
-				}
-			}
-		}
-
-		// Also delete it from training data storage
-		return FileManager.deleteOccurrences(message, fileName);
-	}
-}
-
-async function validateURL(url: string): Promise<boolean> {
-	try {
-		const response = await axios.get(url);
-		return response.status === 200;
-	} catch (error) {
-		return false; // Invalid URL or request error
-	}
+    return `I got no valid ${type ?? 'URLs'} in my brain`;
+  }
 }
