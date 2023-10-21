@@ -48,7 +48,7 @@ export function backToAlphabet(str: string): string {
 }
 
 export function getUrlExtension(url: string) {
-  return url.match(/\.[^.]+$/)?.[0]
+  return url.match(/\.[^./?]+(?=\?|$| )/)?.[0]
 }
 
 export function getUrlDomain(url: string) {
