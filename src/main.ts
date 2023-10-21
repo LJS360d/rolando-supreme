@@ -1,5 +1,3 @@
-import { log } from 'node:console';
-
 import {
 	type ButtonInteraction,
 	type ChatInputCommandInteraction,
@@ -12,13 +10,13 @@ import { startAdminServer } from './AdminServer';
 import { DataRetriever } from './rolando/discord/DataRetriever';
 import { commandInteractions } from './events/CommandInteractions';
 import { FileManager } from './rolando/domain/FileManager';
-import { InteractionManager } from './rolando/discord/InteractionManager';
 import { chainsMap, MarkovChain } from './rolando/model/MarkovChain';
 import { commands } from './static/Commands';
 import { options } from './static/Options';
 import { JOIN_LABEL } from './static/Static';
 import { getRandom } from './utils/Utils';
 import { buttonInteractions } from './events/ButtonInteractions';
+import { info, warn, error, command } from './utils/Logging';
 
 // Import dotenv to load environment variables from .env file
 require('dotenv').config();
@@ -27,9 +25,9 @@ export const client = new Client(options);
 export const dataRetriever = new DataRetriever();
 
 client.on('ready', async () => {
-	log(`Logged in as ${client.user.tag}!`);
+	info(`Logged in as ${client.user.tag}!`);
 	await refreshCommands();
-	log('Successfully reloaded application (/) commands.');
+	info('Successfully reloaded application (/) commands.');
 	const guilds = client.guilds.cache;
 	guilds.forEach((guild: Guild) => {
 		chainsMap.set(guild.id, new MarkovChain());
@@ -38,18 +36,17 @@ client.on('ready', async () => {
 			// Load data into markovchain
 			chainsMap.get(guild.id)!.provideData(previousData);
 			chainsMap.get(guild.id)!.replyRate = FileManager.getReplyRate(guild.id) ?? 10;
-			log(`Loaded ${previousData.length} messages for guild:${guild.name}`);
+			info(`Loaded ${previousData.length} messages for guild: ${guild.name}`);
 		} else {
-			log(`No previous data found for guild:${guild.name}`);
+			warn(`No previous data found for guild: ${guild.name}`);
 		}
 	});
-	log(`Started ${chainsMap.size} Chains`);
 	// Once chains are loaded start the admin server
 	startAdminServer();
 
 	async function refreshCommands(): Promise<void> {
 		try {
-			log('Started refreshing application (/) commands.');
+			info('Started refreshing application (/) commands.');
 			await client.application?.commands.set(commands);
 		} catch (error) {
 			error(error);
@@ -73,11 +70,12 @@ client.on('interactionCreate', async (interaction: ChatInputCommandInteraction) 
 	}
 
 	if (interaction.isChatInputCommand()) {
-		const command = commandInteractions.find(
+		command(interaction.guild.name, interaction.user.tag, interaction.commandName);
+		const cmd = commandInteractions.find(
 			(commandInteraction) => commandInteraction.name === interaction.commandName
 		);
-		if (command) {
-			command.fn(interaction, chain);
+		if (cmd) {
+			cmd.fn(interaction, chain);
 		} else {
 			await interaction.reply('Command not found');
 		}
@@ -86,11 +84,12 @@ client.on('interactionCreate', async (interaction: ChatInputCommandInteraction) 
 // Button Interactions
 client.on('interactionCreate', async (interaction: ButtonInteraction) => {
 	if (interaction.isButton()) {
-		const command = buttonInteractions.find(
+		command(interaction.guild.name, interaction.user.tag, interaction.customId);
+		const cmd = buttonInteractions.find(
 			(buttonInteraction) => buttonInteraction.customId === interaction.customId
 		);
-		if (command) {
-			command.fn(interaction);
+		if (cmd) {
+			cmd.fn(interaction);
 		} else {
 			await interaction.reply('Button command not found');
 		}
@@ -101,7 +100,7 @@ client.on('messageCreate', async (msg: Message) => {
 	if (msg.author !== client.user) {
 		const guildId = msg.guild.id;
 		const chain = chainsMap.get(guildId)!;
-		if (msg.content && msg.content.split(" ").length > 1) {
+		if (msg.content && msg.content.split(' ').length > 1) {
 			FileManager.appendMessageToFile(msg.content, guildId);
 			chain.updateState(msg.content);
 		}
@@ -133,17 +132,17 @@ client.on('messageCreate', async (msg: Message) => {
 void client.login(process.env.TOKEN);
 
 process.on('SIGINT', async () => {
-	log('Received SIGINT signal. Shutting down gracefully...');
+	info('Received SIGINT signal. Shutting down gracefully...');
 
 	process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-	log('Received SIGTERM signal. Shutting down gracefully...');
+	info('Received SIGTERM signal. Shutting down gracefully...');
 
 	process.exit(0);
 });
 
-process.on('uncaughtException', (error: Error) => {
-	log('An unexpected error occurred:', error.message);
+process.on('uncaughtException', (err: Error) => {
+	error(err.message);
 });

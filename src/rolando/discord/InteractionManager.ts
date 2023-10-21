@@ -110,7 +110,7 @@ export class InteractionManager {
 			return;
 		}
 
-		this.getTrainingData(interaction);
+		InteractionManager.getTrainingData(interaction);
 	}
 
 	static async cancelProvideTraining(interaction: ButtonInteraction) {
@@ -143,6 +143,7 @@ export class InteractionManager {
 	}
 
 	static async confirmResetTraining(interaction: ButtonInteraction) {
+		FileManager.deleteGuildData(interaction.guild.id);
 		await interaction.reply({
 			content:
 				'All the training data for this server has been deleted, i am now a blank slate.',

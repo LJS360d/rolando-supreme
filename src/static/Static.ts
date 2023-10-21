@@ -2,7 +2,6 @@ import { type PathLike } from 'fs';
 
 export const MSG_LIMIT = 500000 as const;
 export const USE_THRESHOLD = 15 as const;
-
 export const DATA_FOLDER: PathLike = './train_data/' as const;
 export const REPLYRATE_COMMAND_LABEL = (rate: string) =>
 	`The reply rate is currently set to ${rate}\nUse \`/setreplyrate\` to change it`;

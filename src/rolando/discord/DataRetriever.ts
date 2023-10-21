@@ -10,6 +10,7 @@ import {
 import { FileManager } from '../domain/FileManager';
 import { client } from '../../main';
 import { MSG_LIMIT } from '../../static/Static';
+import { animatedFetch, warn } from '../../utils/Logging';
 import { containsWorkingURL } from '../../utils/Utils';
 
 type fetchingStatus = { fetching: boolean; channelNames: string[] };
@@ -20,6 +21,8 @@ export class DataRetriever {
 	async fetchAndStoreAllMessagesInGuild(guild: Guild): Promise<void> {
 		return new Promise(async (resolve) => {
 			const channelPromises: Array<Promise<void>> = [];
+			const info = animatedFetch();
+			info(`Fetching messages in ${guild.name}`);
 			guild.channels.cache.forEach(async (channel: GuildBasedChannel) => {
 				try {
 					const perms = channel.permissionsFor(client.user);
@@ -36,10 +39,11 @@ export class DataRetriever {
 						DataRetriever.fetchStatus.channelNames.push(`#${channel.name}`);
 					}
 				} catch (error) {
-					console.log(`Could not access channel: ${channel.name}`);
+					warn(`Access denied for channel: ${channel.name}`);
 				}
 			});
 			await Promise.all(channelPromises);
+			info(`Finished fetching messages in ${guild.name}`);
 			DataRetriever.fetchStatus.channelNames = [];
 			DataRetriever.fetchStatus.fetching = false;
 
@@ -69,27 +73,21 @@ export class DataRetriever {
 						remaining = false;
 						continue;
 					}
-
-					// Add messages to the array
 					messageBatch.forEach((msg: Message) => {
-						if (msg.content && !msg.author.bot) {
-							// Check if msg has a working URL
-							const message: string = containsWorkingURL(msg.content)
-								? msg.content
-								: msg.content.toLowerCase();
-							messages.push(message);
-							FileManager.appendMessageToFile(message, fileName);
+						if (msg.content && msg.author !== client.user) {
+							const message: string = msg.content;
+							if (containsWorkingURL(message) || message.split(' ').length > 1) {
+								messages.push(message);
+								FileManager.appendMessageToFile(message, fileName);
+							}
 						}
 					});
-
 					// Update the last message ID for the next batch
 					lastMessageID = messageBatch.at(-1)?.id;
-					console.log(`${channel.name}: Fetched ${messages.length} messages`);
 				}
-
 				resolve();
 			} catch (error) {
-				console.error(`Error fetching messages: ${error}`);
+				error(`Error fetching messages: ${error}`);
 				reject(`Error fetching messages: ${error}`);
 			}
 		});

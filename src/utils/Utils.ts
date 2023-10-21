@@ -21,16 +21,6 @@ export function containsWorkingURL(string: string) {
 	return false;
 }
 
-/**
- * The `min` and `max` parameters are inclusive.
- * @param min The minimum number to return.
- * @param max The maximum number to return.
- * @returns A random number between the two numbers.
- */
-export function getRandom(min: number, max: number): number {
-	return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
 export function toHieroglyphs(str: string): string {
 	return str
 		.toLowerCase()
@@ -48,23 +38,33 @@ export function backToAlphabet(str: string): string {
 }
 
 export function getUrlExtension(url: string) {
-  return url.match(/\.[^./?]+(?=\?|$| )/)?.[0]
+	return url.match(/\.[^./?]+(?=\?|$| )/)?.[0];
 }
 
 export function getUrlDomain(url: string) {
-  try{
-    return new URL(url).hostname
-  } catch (error) {
-    // Invalid URL
-  }
-  return null;
+	try {
+		return new URL(url).hostname;
+	} catch (error) {
+		// Invalid URL
+	}
+	return null;
 }
 
-export async function validateUrl (url: string): Promise<boolean> {
-  try {
-    const response = await axios.head(url);
-    return response.status === 200;
-  } catch (error) {
-    return false; // Invalid URL or request error
-  }
+export async function validateUrl(url: string): Promise<boolean> {
+	try {
+		const response = await axios.head(url);
+		return response.status === 200;
+	} catch (error) {
+		return false;
+	}
+}
+
+/**
+ * The `min` and `max` parameters are inclusive.
+ * @param min The minimum number to return.
+ * @param max The maximum number to return.
+ * @returns A random number between the two numbers.
+ */
+export function getRandom(min: number, max: number): number {
+	return Math.floor(Math.random() * (max - min + 1) + min);
 }

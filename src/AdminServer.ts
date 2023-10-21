@@ -4,6 +4,7 @@ import http from 'http';
 import { DataRetriever } from './rolando/discord/DataRetriever';
 import { client } from './main';
 import { chainsMap } from './rolando/model/MarkovChain';
+import { getRequestLog, serv } from './utils/Logging';
 
 export function startAdminServer() {
 	const startTime = Date.now();
@@ -11,8 +12,9 @@ export function startAdminServer() {
 	const httpServer: http.Server = http.createServer(app);
 	app.use(express.static('public'));
 	app.set('view engine', 'ejs');
-
-	app.get('/', (req: Request, res: Response) => {
+	const rootEndpoint = `/`;
+	app.get(rootEndpoint, (req: Request, res: Response) => {
+		getRequestLog(req.url);
 		const props = {
 			client,
 			guilds: client.guilds.cache,
@@ -23,19 +25,17 @@ export function startAdminServer() {
 		};
 		res.render('admin', props);
 	});
-	console.log('Started endpoints for chains');
 	client.guilds.cache.forEach((guild) => {
-		app.get(
-			`/${guild.name.toLowerCase().replace(/ /g, '_')}`,
-			(req: Request, res: Response) => {
-				res.json(chainsMap.get(guild.id)!);
-			}
-		);
+		const endpoint = `/${guild.name.toLowerCase().replace(/ /g, '_')}`;
+		app.get(endpoint, (req: Request, res: Response) => {
+			getRequestLog(req.url);
+			res.json(chainsMap.get(guild.id)!);
+		});
 	});
 
 	// Const PORT: number | string = process.env.PORT || 8080;
 	const PORT = 8080;
 	httpServer.listen(PORT, () => {
-		console.log(`Server listening on port ${PORT}`);
+		serv(`Server listening on port ${PORT}`);
 	});
 }

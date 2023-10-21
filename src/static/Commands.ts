@@ -81,7 +81,7 @@ export const commands: ApplicationCommandDataResolvable[] = [
 		],
 	},
 	{
-		name: 'hyero',
+		name: 'hieroglyphy',
 		description: 'translates the given `text` into hieroglyphs',
 		options: [
 			{
@@ -93,7 +93,7 @@ export const commands: ApplicationCommandDataResolvable[] = [
 		],
 	},
 	{
-		name: 'unhyero',
+		name: 'unhieroglyphy',
 		description: 'translates the hieroglyphs in `text` back to alphabet',
 		options: [
 			{
