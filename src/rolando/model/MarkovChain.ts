@@ -3,8 +3,6 @@ import axios from 'axios';
 import { FileManager } from '../domain/FileManager';
 import { USE_THRESHOLD } from '../../static/Static';
 import { getRandom, getUrlDomain, getUrlExtension, toHieroglyphs, validateUrl } from '../../utils/Utils';
-import e from 'express';
-
 /**
  * `key`: Guild ID
  * `value`: MarkovChain
