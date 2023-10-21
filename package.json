@@ -1,12 +1,12 @@
 {
 	"name": "rolando",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "",
 	"private": "true",
 	"type": "commonjs",
 	"engines": {
-		"node": "18.12.1",
-		"npm": "9.1.1"
+		"node": "16.18.1",
+		"npm": "8.19.2"
 	},
 	"scripts": {
 		"test": "ts-node-dev ./test/test.ts",
