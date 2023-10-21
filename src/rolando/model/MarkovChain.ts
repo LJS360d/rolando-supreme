@@ -3,6 +3,7 @@ import axios from 'axios';
 import { FileManager } from '../domain/FileManager';
 import { USE_THRESHOLD } from '../../static/Static';
 import { getRandom, getUrlDomain, getUrlExtension, toHieroglyphs, validateUrl } from '../../utils/Utils';
+import e from 'express';
 
 /**
  * `key`: Guild ID
@@ -44,12 +45,15 @@ export class MarkovChain {
   updateState(message: string): void {
     if (message.startsWith('https:')) {
       const extenstion = getUrlExtension(message);
-      const domain = getUrlDomain(message);      
-      if (['.gif'].includes(extenstion) || ["tenor.com"].includes(domain)) 
+      const domain = getUrlDomain(message); 
+      if(!extenstion)
+      console.log(message,domain,extenstion);
+           
+      if (['.gif'].includes(extenstion) || ['tenor.com','giphy.com'].includes(domain)) 
         this.gifs.add(message);
       if (['.png', '.jpg','.jpeg','.webp'].includes(extenstion)) 
         this.images.add(message);
-      if (['.mp4','.mov'].includes(extenstion)) 
+      if (['.mp4','.mov'].includes(extenstion) || ['www.youtube.com','youtu.be'].includes(domain)) 
         this.videos.add(message);
     }
 
