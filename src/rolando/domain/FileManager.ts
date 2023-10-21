@@ -15,13 +15,11 @@ export class FileManager {
 		if (this.guildHasPreviousData(guildId)) {
 			return FileManager.readMessagesFromFile(guildId);
 		}
-
 		return null;
 	}
 
 	static appendMessageToFile(msg: string, fileName: string): void {
-		const cleanedMsg = msg.toLowerCase();
-		appendFileSync(`${DATA_FOLDER}${fileName}.dt`, cleanedMsg + '\n');
+		appendFileSync(`${DATA_FOLDER}${fileName}.dt`, msg + '\n');
 	}
 
 	static readMessagesFromFile(fileName: PathLike): string[] {
