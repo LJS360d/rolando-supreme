@@ -14,7 +14,7 @@ export function startAdminServer() {
 	app.set('view engine', 'ejs');
 	const rootEndpoint = `/`;
 	app.get(rootEndpoint, (req: Request, res: Response) => {
-		getRequestLog(req.url);
+		//getRequestLog(req.url);
 		const props = {
 			client,
 			guilds: client.guilds.cache,
