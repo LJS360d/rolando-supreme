@@ -44,9 +44,7 @@ export class MarkovChain {
   updateState(message: string): void {
     if (message.startsWith('https:')) {
       const extenstion = getUrlExtension(message);
-      const domain = getUrlDomain(message);
-      console.log(domain, extenstion);
-      
+      const domain = getUrlDomain(message);      
       if (['.gif'].includes(extenstion) || ["tenor.com"].includes(domain)) 
         this.gifs.add(message);
       if (['.png', '.jpg','.jpeg','.webp'].includes(extenstion)) 
