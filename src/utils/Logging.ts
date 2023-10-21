@@ -1,12 +1,12 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { client, env } from '../main';
+import { env } from '../main';
 import { EmbedBuilder } from 'discord.js';
 
 export function info(msg: string): void {
 	log('info', 'green', msg);
 }
 export function warn(msg: string): void {
-	log('warn', 'red', msg);
+	log('warn', 'yellow', msg);
 }
 export function error(msg: string): void {
 	log('error', 'red', msg);
@@ -131,7 +131,7 @@ enum CC {
 	cyanbg = '\x1b[46m',
 	whitebg = '\x1b[47m',
 }
-
+// DiscordColors
 enum DC {
 	black = 2303786,
 	gray = 9807270,
