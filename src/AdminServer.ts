@@ -2,7 +2,7 @@ import express, { type Request, type Response } from 'express';
 import http from 'http';
 
 import { DataRetriever } from './rolando/discord/DataRetriever';
-import { client } from './main';
+import { client, env } from './main';
 import { chainsMap } from './rolando/model/MarkovChain';
 import { getRequestLog, serv } from './utils/Logging';
 
@@ -20,7 +20,7 @@ export function startAdminServer() {
 			guilds: client.guilds.cache,
 			chains: chainsMap,
 			startTime,
-			version: process.env.npm_package_version,
+			version: env.VERSION,
 			fetchStatus: DataRetriever.fetchStatus,
 		};
 		res.render('admin', props);
@@ -33,7 +33,6 @@ export function startAdminServer() {
 		});
 	});
 
-	// Const PORT: number | string = process.env.PORT || 8080;
 	const PORT = 8080;
 	httpServer.listen(PORT, () => {
 		serv(`Server listening on port ${PORT}`);

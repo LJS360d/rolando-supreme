@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 import { FileManager } from '../domain/FileManager';
 import { USE_THRESHOLD } from '../../static/Static';
 import {
@@ -167,7 +165,7 @@ export class MarkovChain {
 			}
 		}
 		// Calculate the complexity score based on state size and high-value words
-		return Math.ceil(Math.log10(stateSize * highValueWords));
+		return Math.ceil(Math.log2(10 * stateSize * highValueWords));
 	}
 
 	getAnalytics(): ChainAnalytics {

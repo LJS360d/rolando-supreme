@@ -18,8 +18,15 @@ import { getRandom } from './utils/Utils';
 import { buttonInteractions } from './events/ButtonInteractions';
 import { info, warn, error, command } from './utils/Logging';
 
-// Import dotenv to load environment variables from .env file
 require('dotenv').config();
+export const env = {
+	// the discord bot's token
+	TOKEN: process.env.TOKEN,
+	// (recommended) a webhook for logs
+	LOG_WEBHOOK: process.env.LOG_WEBHOOK_URL,
+	// package version
+	VERSION: process.env.npm_package_version,
+};
 
 export const client = new Client(options);
 export const dataRetriever = new DataRetriever();
@@ -129,17 +136,15 @@ client.on('messageCreate', async (msg: Message) => {
 	}
 });
 
-void client.login(process.env.TOKEN);
+void client.login(env.TOKEN);
 
 process.on('SIGINT', async () => {
-	info('Received SIGINT signal. Shutting down gracefully...');
-
+	info('Received SIGINT signal. Rolando 😴');
 	process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-	info('Received SIGTERM signal. Shutting down gracefully...');
-
+	info('Received SIGTERM signal. Rolando 😴');
 	process.exit(0);
 });
 
