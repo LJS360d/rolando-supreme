@@ -101,7 +101,7 @@ client.on('messageCreate', async (msg: Message) => {
 	if (msg.author !== client.user) {
 		const guildId = msg.guild.id;
 		const chain = chainsMap.get(guildId)!;
-		if (msg.content) {
+		if (msg.content && msg.content.split(" ").length > 1) {
 			FileManager.appendMessageToFile(msg.content, guildId);
 			chain.updateState(msg.content);
 		}

@@ -51,6 +51,15 @@ export function getUrlExtension(url: string) {
   return url.match(/\.[^.]+$/)?.[0]
 }
 
+export function getUrlDomain(url: string) {
+  try{
+    return new URL(url).hostname
+  } catch (error) {
+    // Invalid URL
+  }
+  return null;
+}
+
 export async function validateUrl (url: string): Promise<boolean> {
   try {
     const response = await axios.head(url);
