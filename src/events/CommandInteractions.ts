@@ -100,11 +100,11 @@ export const commandInteractions: CommandInteraction[] = [
 		},
 	},
 	{
-		name: 'hyero',
+		name: 'hieroglyphy',
 		fn: async (interaction, chain) => InteractionManager.hyero(interaction, chain),
 	},
 	{
-		name: 'unhyero',
+		name: 'unhieroglyphy',
 		fn: async (interaction) => InteractionManager.unhyero(interaction),
 	},
 ];

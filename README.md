@@ -11,14 +11,14 @@ I used the MarkovChain to make the bot **GUESS** which word should be after anot
 All of the bots guesses are **Random** but **Weighted**.
 
 A **Markov chain**, known as a mathematical model, serves to depict a series of occurrences in which the probability of each event is solely reliant upon the preceding event's state. It functions as a stochastic process that advances between various states according to a predefined set of probabilities. Accordingly, the chain possesses the capability to be discrete-time or continuous-time, depending on whether state changes transpire at discrete or continuous intervals. Following are some supplementary elucidations regarding Markov chains: <br>
-- **Markov Property**: The likelihood of forthcoming actions within a Markov chain exhibits no dependence on the steps undertaken leading up to the present state. 
+
+- **Markov Property**: The likelihood of forthcoming actions within a Markov chain exhibits no dependence on the steps undertaken leading up to the present state.
 
 - **Transition Matrix**: In the context of a Markov chain, a transition matrix signifies data pertaining to the probabilities associated with transitioning between states. Each row of the matrix corresponds to a probability vector, with the sum of its constituents amounting to 1. The ((i, , j)^\text{th}) component of the matrix denotes the probability of advancing from state [ **i** ] to state [ **j** ]
 
 - **State Space**: The state space of a Markov chain encompasses the complete assemblage of plausible states that the chain could potentially occupy. For instance, supposing one intends to model the conduct of an infant, the state space might encompass designations such as "engaged in play," "engaging in nourishment," "residing in slumber," and "expressing discontent."
 
 - **Transition Probabilities**: The transition probabilities within a Markov chain afford insight into the likelihood of transitioning from a particular state to any other conceivable state. As an illustration, one might question the probability that an infant currently engaged in play will promptly succumb to sleep within the subsequent five minutes, without manifesting discontent in advance.<br>
-
 
 ## Credits
 

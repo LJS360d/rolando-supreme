@@ -1,12 +1,14 @@
 import { FileManager } from '../domain/FileManager';
 import { USE_THRESHOLD } from '../../static/Static';
+import { getRandom, toHieroglyphs } from '../../utils/Utils';
 import {
-	getRandom,
 	getUrlDomain,
 	getUrlExtension,
-	toHieroglyphs,
+	isGifUrl,
+	isImageUrl,
+	isVideoUrl,
 	validateUrl,
-} from '../../utils/Utils';
+} from '../../utils/UrlUtils';
 /**
  * `key`: Guild ID
  * `value`: MarkovChain
@@ -47,15 +49,9 @@ export class MarkovChain {
 		if (message.startsWith('https:')) {
 			const extenstion = getUrlExtension(message);
 			const domain = getUrlDomain(message);
-			if (['.gif'].includes(extenstion) || ['tenor.com', 'giphy.com'].includes(domain))
-				this.gifs.add(message);
-			if (['.png', '.jpg', '.jpeg', '.webp'].includes(extenstion))
-				this.images.add(message);
-			if (
-				['.mp4', '.mov'].includes(extenstion) ||
-				['www.youtube.com', 'youtu.be'].includes(domain)
-			)
-				this.videos.add(message);
+			if (isGifUrl(domain, extenstion)) this.gifs.add(message);
+			if (isImageUrl(domain, extenstion)) this.images.add(message);
+			if (isVideoUrl(domain, extenstion)) this.videos.add(message);
 		}
 
 		const words = message.split(' ');
@@ -116,6 +112,7 @@ export class MarkovChain {
 		const invertedIndex: Record<number, string[]> = {};
 
 		// Build the inverted index
+		// O(n)
 		for (const currentWord in this.state) {
 			const nextWords = this.state[currentWord];
 			for (const nextWord in nextWords) {
@@ -165,8 +162,8 @@ export class MarkovChain {
 			}
 		}
 		// Calculate the complexity score based on state size and high-value words
-		// C = log2(10*(S*HVW))
-		return Math.ceil(Math.log2(10 * (stateSize + highValueWords)));
+		// y = log2(10*x*HVW + 1)
+		return Math.ceil(Math.log2(10 * stateSize * highValueWords + 1));
 	}
 
 	getAnalytics(): ChainAnalytics {
@@ -197,27 +194,18 @@ export class MarkovChain {
 		const randomIndex = Math.floor(Math.random() * keys.length);
 		const starterWord = keys[randomIndex];
 		const sentence = this.filter(this.generateText(starterWord, length));
-		return getRandom(1, 200) === 200 ? toHieroglyphs(sentence) : sentence;
+		// 0.5% to turn text into hieroglyphs
+		return getRandom(1, 200) === 69 ? toHieroglyphs(sentence) : sentence;
 	}
 
 	delete(message: string, fileName: string): boolean {
 		// Given a message delete it from the markov chain
 		if (message.startsWith('https:')) {
-			if (message.endsWith('.gif')) {
-				this.gifs.delete(message);
-			}
-
-			if (
-				message.endsWith('.png') ||
-				message.endsWith('.jpeg') ||
-				message.endsWith('.jpg')
-			) {
-				this.images.delete(message);
-			}
-
-			if (message.endsWith('.mp4') || message.endsWith('.mov')) {
-				this.videos.delete(message);
-			}
+			const extenstion = getUrlExtension(message);
+			const domain = getUrlDomain(message);
+			if (isGifUrl(domain, extenstion)) this.gifs.delete(message);
+			if (isImageUrl(domain, extenstion)) this.images.delete(message);
+			if (isVideoUrl(domain, extenstion)) this.videos.delete(message);
 		}
 
 		const words = message.split(' ');

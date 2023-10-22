@@ -1,25 +1,4 @@
-import axios from 'axios';
 import { HieroglyphsMap, InvertedHieroglyphsMap } from '../static/Hieroglyphs';
-
-export function containsWorkingURL(string: string) {
-	const urlRegex = /(https?|ftp):\/\/[^\s/$.?#].[^\s]*/;
-	const matches = urlRegex.exec(string);
-
-	if (matches) {
-		for (const url of matches) {
-			try {
-				const { protocol } = new URL(url);
-				if (protocol === 'http:' || protocol === 'https:') {
-					return true;
-				}
-			} catch (error) {
-				// Ignore invalid URLs
-			}
-		}
-	}
-
-	return false;
-}
 
 export function toHieroglyphs(str: string): string {
 	return str
@@ -35,28 +14,6 @@ export function backToAlphabet(str: string): string {
 		.split('')
 		.map((char) => InvertedHieroglyphsMap.get(char) ?? char)
 		.join('');
-}
-
-export function getUrlExtension(url: string) {
-	return url.match(/\.[^./?]+(?=\?|$| )/)?.[0];
-}
-
-export function getUrlDomain(url: string) {
-	try {
-		return new URL(url).hostname;
-	} catch (error) {
-		// Invalid URL
-	}
-	return null;
-}
-
-export async function validateUrl(url: string): Promise<boolean> {
-	try {
-		const response = await axios.head(url);
-		return response.status === 200;
-	} catch (error) {
-		return false;
-	}
 }
 
 /**

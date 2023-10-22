@@ -11,7 +11,7 @@ import { FileManager } from '../domain/FileManager';
 import { client } from '../../main';
 import { MSG_LIMIT } from '../../static/Static';
 import { animatedFetch, error, warn } from '../../utils/Logging';
-import { containsWorkingURL } from '../../utils/Utils';
+import { containsWorkingURL } from '../../utils/UrlUtils';
 
 type fetchingStatus = { fetching: boolean; channelNames: string[] };
 export class DataRetriever {
