@@ -55,18 +55,20 @@ client.on('ready', async () => {
 		try {
 			info('Started refreshing application (/) commands.');
 			await client.application?.commands.set(commands);
-		} catch (error) {
-			error(error);
+		} catch (err) {
+			error(err);
 		}
 	}
 });
 client.on('guildCreate', (guild: Guild) => {
 	chainsMap.set(guild.id, new MarkovChain());
 	guild.systemChannel.send(JOIN_LABEL);
+	info(`Joined guild: ${guild.name}`);
 });
 client.on('guildDelete', (guild: Guild) => {
 	chainsMap.delete(guild.id);
 	FileManager.deleteGuildData(guild.id);
+	warn(`Left guild: ${guild.name}`);
 });
 // Command Interactions
 client.on('interactionCreate', async (interaction: ChatInputCommandInteraction) => {
@@ -149,5 +151,5 @@ process.on('SIGTERM', async () => {
 });
 
 process.on('uncaughtException', (err: Error) => {
-	error(err.message);
+	error(`${err.name} ${err.message}`);
 });

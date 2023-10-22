@@ -38,6 +38,7 @@ export function animatedFetch() {
 			process.stdout.write(
 				`${CC.gray}[${now}]${CC.stop} ${CC.magenta}FETCH${CC.stop} ✓ ${message}\n`
 			);
+			webhookLog(now, 'FETCH', `✓ ${message}`, 'magenta');
 			isLoading = false;
 		} else {
 			// Start the loading animation

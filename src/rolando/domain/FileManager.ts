@@ -8,6 +8,7 @@ import {
 } from 'fs';
 
 import { DATA_FOLDER } from '../../static/Static';
+import { error } from '../../utils/Logging';
 
 export class FileManager {
 	static getPreviousTrainingDataForGuild(guildId: string): string[] | undefined {
@@ -27,8 +28,8 @@ export class FileManager {
 			const fileContent: string = readFileSync(`${DATA_FOLDER}${fileName}.dt`, 'utf-8');
 			const lines: string[] = fileContent.split('\n');
 			return lines;
-		} catch (error) {
-			console.error(`Error reading file: ${error}`);
+		} catch (err) {
+			error(`Error reading file: ${err}`);
 			return [];
 		}
 	}

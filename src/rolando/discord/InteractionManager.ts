@@ -14,6 +14,8 @@ import { chainsMap, MarkovChain } from '../model/MarkovChain';
 import { commands } from '../../static/Commands';
 import { PROVIDE_TRAINING_LABEL } from '../../static/Static';
 import { backToAlphabet, getRandom, toHieroglyphs } from '../../utils/Utils';
+import { error } from '../../utils/Logging';
+import axios from 'axios';
 
 export class InteractionManager {
 	static async getTrainingData(
@@ -159,32 +161,28 @@ export class InteractionManager {
 	}
 
 	static async irlFact(interaction: ChatInputCommandInteraction) {
-		(
-			await fetch('https://uselessfacts.jsph.pl/api/v2/facts/random', {
+		axios
+			.get('https://uselessfacts.jsph.pl/api/v2/facts/random', {
 				headers: { Accept: 'application/json' },
 			})
-		)
-			.json()
 			.then(async (res) => {
-				await interaction.reply({ content: res.text });
+				await interaction.reply({ content: res.data.text });
 			})
-			.catch((error) => {
-				console.error(error);
+			.catch((err) => {
+				error(err);
 			});
 	}
 
 	static async catFact(interaction: ChatInputCommandInteraction) {
-		(
-			await fetch('https://meowfacts.herokuapp.com/', {
+		axios
+			.get('https://meowfacts.herokuapp.com/', {
 				headers: { Accept: 'application/json' },
 			})
-		)
-			.json()
 			.then(async (res) => {
-				await interaction.reply(res.data[0]);
+				await interaction.reply(res.data.data[0]);
 			})
-			.catch((error) => {
-				console.error(error);
+			.catch((err) => {
+				error(err);
 			});
 	}
 
@@ -223,8 +221,8 @@ export class InteractionManager {
 			await interaction.reply({
 				content: `<@${randomUserId}> ${chainsMap.get(interaction.guild.id).talk(random)}`,
 			});
-		} catch (error) {
-			console.log('An error occurred:', error);
+		} catch (err) {
+			error(err);
 		}
 	}
 
@@ -244,8 +242,8 @@ export class InteractionManager {
 				embeds: [embed],
 				ephemeral: true,
 			});
-		} catch (error) {
-			console.log('An error occurred:', error);
+		} catch (err) {
+			error(err);
 		}
 	}
 

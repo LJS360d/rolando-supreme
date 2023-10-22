@@ -10,7 +10,7 @@ import {
 import { FileManager } from '../domain/FileManager';
 import { client } from '../../main';
 import { MSG_LIMIT } from '../../static/Static';
-import { animatedFetch, warn } from '../../utils/Logging';
+import { animatedFetch, error, warn } from '../../utils/Logging';
 import { containsWorkingURL } from '../../utils/Utils';
 
 type fetchingStatus = { fetching: boolean; channelNames: string[] };
@@ -35,6 +35,7 @@ export class DataRetriever {
 							guild.id
 						);
 						channelPromises.push(channelPromise);
+						channelPromise.catch((err: string) => error(err));
 						DataRetriever.fetchStatus.fetching = true;
 						DataRetriever.fetchStatus.channelNames.push(`#${channel.name}`);
 					}
@@ -86,9 +87,8 @@ export class DataRetriever {
 					lastMessageID = messageBatch.at(-1)?.id;
 				}
 				resolve();
-			} catch (error) {
-				error(`Error fetching messages: ${error}`);
-				reject(`Error fetching messages: ${error}`);
+			} catch (err) {
+				reject(`Error fetching messages: ${err}`);
 			}
 		});
 	}
