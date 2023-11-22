@@ -28,7 +28,7 @@ export function startAdminServer() {
 	client.guilds.cache.forEach((guild) => {
 		const endpoint = `/${guild.name.toLowerCase().replace(/ /g, '_')}`;
 		app.get(endpoint, (req: Request, res: Response) => {
-			getRequestLog(req.url);
+			getRequestLog(`${req.url}`);
 			res.json(chainsMap.get(guild.id)!);
 		});
 	});

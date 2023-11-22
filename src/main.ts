@@ -128,7 +128,7 @@ client.on('messageCreate', async (msg: Message) => {
 			const reply =
 				random <= 24
 					? chain.talk(random)
-					: Math.random() < 1 / 3
+					: Math.random() < 0.33
 					? await chain.getGif()
 					: Math.random() < 0.5
 					? await chain.getImage()

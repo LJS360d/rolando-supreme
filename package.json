@@ -1,18 +1,19 @@
 {
 	"name": "rolando",
-	"version": "1.2.4",
+	"version": "1.2.5",
 	"description": "",
-	"private": "true",
+	"private": true,
 	"type": "commonjs",
 	"engines": {
-		"node": "16.18.1",
-		"npm": "8.19.2"
+		"node": ">=16.18.1",
+		"npm": ">=8.19.2"
 	},
 	"scripts": {
 		"test": "ts-node-dev ./test/test.ts",
 		"dev": "ts-node-dev ./src/main.ts",
 		"lint": "prettier . --write",
 		"start": "ts-node ./src/main.ts",
+    "start:prod" : "npm run build && node ./dist/bundle.js",
 		"build": "webpack --config webpack.config.js --mode production"
 	},
 	"keywords": [],

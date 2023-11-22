@@ -3,10 +3,10 @@ const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
 	target: 'node',
-	entry: './src/main.ts', // Replace with the entry point
+	entry: './src/main.ts',
 	output: {
 		path: path.resolve(__dirname, 'dist'),
-		filename: 'bundle.js', // Replace with the desired name for your output file
+		filename: 'bundle.js', 
 	},
 	resolve: {
 		extensions: ['.ts', '.js'],
