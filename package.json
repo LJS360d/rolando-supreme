@@ -1,5 +1,5 @@
 {
-	"name": "test",
+	"name": "fonzi2-template",
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.js",
@@ -7,12 +7,12 @@
 	"engines": {
 		"node": ">=18"
 	},
+  "packageManager": "pnpm@8.12.1",
 	"scripts": {
-		"start": "npm run start:dev",
+		"start": "cross-env NODE_ENV=development tsnd --respawn --clear --transpile-only src/main.ts",
 		"secrets": "node replit.secrets.mjs",
 		"build": "rimraf dist && webpack --config webpack.config.js --mode production",
-		"build:start": "npm run build && npm run start:prod",
-		"start:dev": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only src/main.ts",
+		"build:start": "pnpm build && pnpm start:prod",
 		"start:prod": "cross-env NODE_ENV=production node dist/bundle.js",
 		"lint": "prettier . --write"
 	},
@@ -24,7 +24,7 @@
 		"dotenv": "^16.3.1",
 		"ejs": "^3.1.9",
 		"express": "^4.18.2",
-		"fonzi2": "^0.4.4"
+		"fonzi2": "^0.4.5"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.21",
