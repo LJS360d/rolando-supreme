@@ -1,0 +1,16 @@
+<div class="flex flex-col w-full">
+
+  <ul id="endpoints" class="menu w-full">
+    <% routes.forEach((route) =>{  %>
+    <li class="list-item border-2 border-neutral w-full m-2">
+      <details>
+        <summary class="rounded-none">
+          <h3><%= route.method.toUpperCase() %></h3>
+          <span><%= route.route %></span>
+        </summary>
+        <iframe class="min-h-[50svh] w-full" src=<%= route.route %>></iframe>
+      </details>
+    </li>
+    <%}); %>
+  </ul>
+</div>

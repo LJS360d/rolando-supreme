@@ -2,6 +2,7 @@ import { Client } from 'discord.js';
 import express, { Request, Response } from 'express';
 import { Fonzi2Server, Fonzi2ServerData } from 'fonzi2';
 import { resolve } from 'path';
+
 export class StarterKitServer extends Fonzi2Server {
 	constructor(client: Client, data: Fonzi2ServerData) {
 		super(client, data);
@@ -10,7 +11,9 @@ export class StarterKitServer extends Fonzi2Server {
 	}
 
 	override start(): void {
+		//? Add new endpoints and pages here
 		this.app.get('/data', this.dataPage.bind(this));
+
 		this.httpServer.on('request', (req, res) => {
 			// Logger.trace(`[${req.method}] ${req.url} ${res.statusCode}`);
 		});
@@ -22,12 +25,24 @@ export class StarterKitServer extends Fonzi2Server {
 			data: this.data,
 			routes: this.getAllRoutes(),
 		};
-		res.render('data', props);
+		this.render(res, 'pages/data', props);
 	}
 
 	private getAllRoutes(): { route: string; method: string }[] {
 		const routesRaw: { path: string; stack: { name: string; method: string }[] }[] =
 			this.app._router.stack.map((r) => r.route).filter(Boolean);
 		return routesRaw.map(({ path, stack }) => ({ route: path, method: stack[0].method }));
+	}
+
+	private render(res: Response, page: string, props: any) {
+		const options = {
+			theme: 'dark',
+			title: 'Fonzi2 Starter Kit',
+			props,
+		};
+		res.render('index', {
+			component: page,
+			...options,
+		});
 	}
 }

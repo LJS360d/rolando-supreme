@@ -48,7 +48,7 @@ const options: ClientOptions = {
 	presence: {
 		activities: [{ name: 'a dumb dev', type: ActivityType.Watching }],
 		afk: false,
-		status: 'idle',
+		status: 'online',
 	},
 };
 

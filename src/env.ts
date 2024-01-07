@@ -9,7 +9,7 @@ const env = {
 	// ? [Recommended] a webhook for logs
 	LOG_WEBHOOK: process.env['LOG_WEBHOOK'],
 	// ? [Recommended] a comma separated list of discord user IDs that can access the admin dashboard, leave empty for no auth
-	OWNER_IDS: process.env['OWNER_IDS'] ? process.env['OWNER_IDS'].split(',') : [],
+	OWNER_IDS: process.env['OWNER_IDS']?.split(',') || [],
 	// * npm package version
 	VERSION: process.env['npm_package_version']!,
 	// * the server's port (default: 8080)

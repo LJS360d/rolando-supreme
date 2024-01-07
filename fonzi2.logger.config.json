@@ -1,0 +1,14 @@
+{
+	"$schema": "./node_modules/fonzi2/dist/lib/logger/schema.json",
+	"enabled": true,
+	"levels": "all",
+	"remote": {
+		"enabled": false,
+		"levels": "all"
+	},
+	"file": {
+		"enabled": false,
+		"levels": "all",
+		"path": "logs/"
+	}
+}
