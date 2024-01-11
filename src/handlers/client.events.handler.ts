@@ -17,7 +17,7 @@ export default class ClientEventsHandler extends Handler {
 
 		const loading = Logger.loading('Started refreshing application (/) commands.');
 		try {
-			await this.client?.application?.commands.set(this.commands);
+			// await this.client?.application?.commands.set(this.commands);
 			loading.success('Successfully reloaded application (/) commands.');
 			new StarterKitServer(this.client!, {
 				port: env.PORT,

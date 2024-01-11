@@ -2,6 +2,7 @@ import { Client } from 'discord.js';
 import express, { Request, Response } from 'express';
 import { Fonzi2Server, Fonzi2ServerData } from 'fonzi2';
 import { resolve } from 'path';
+import session from 'cookie-session';
 
 export class StarterKitServer extends Fonzi2Server {
 	constructor(client: Client, data: Fonzi2ServerData) {
@@ -20,6 +21,23 @@ export class StarterKitServer extends Fonzi2Server {
 		super.start();
 	}
 
+	override async dashboard(req: Request, res: Response) {
+		const userInfo = req.session!['userInfo'];
+		if (!userInfo) {
+			res.redirect('/unauthorized');
+			return;
+		}
+		const props = {
+			client: this.client,
+			guilds: this.client.guilds.cache,
+			startTime: this.startTime,
+			version: this.data.version,
+			inviteLink: this.data.inviteLink,
+			userInfo,
+		};
+		this.render(res, 'pages/dashboard', props, { theme: 'dim' });
+	}
+
 	async dataPage(req: Request, res: Response) {
 		const props = {
 			data: this.data,
@@ -34,15 +52,27 @@ export class StarterKitServer extends Fonzi2Server {
 		return routesRaw.map(({ path, stack }) => ({ route: path, method: stack[0].method }));
 	}
 
-	private render(res: Response, page: string, props: any) {
-		const options = {
+	private render(res: Response, page: string, props: any, options?: any) {
+		const defaultOptions = {
+			themes: [
+				'dark',
+				'dim',
+				'dracula',
+				'business',
+				'night',
+				'lemonade',
+				'wireframe',
+				'pastel',
+				'fantasy',
+				'light',
+			],
 			theme: 'dark',
 			title: 'Fonzi2 Starter Kit',
 			props,
 		};
 		res.render('index', {
 			component: page,
-			...options,
+			...{ ...defaultOptions, ...options },
 		});
 	}
 }

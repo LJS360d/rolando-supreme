@@ -1,0 +1,82 @@
+<header class="flex justify-between">
+  <span id="version" class="text-sm">Version:<b class="font-bold"><%= version %></b></span>
+  <a class="invite" href="<%=inviteLink%>">
+    <h1 class="flex items-center">
+      <img class="h-24 rounded-full mx-4" src="<%=client.user.avatarURL()%>">
+      <%= client.user.tag%>
+    </h1>
+  </a>
+  <div style="background-color: <%= userInfo.banner_color %>" class="flex h-min rounded-lg p-2 items-center">
+    <img class="avatar rounded-full h-12" src="<%=userInfo.avatar%>" alt="avatar">
+    <div class="ml-2">
+      <h4 class="text-base [text-shadow:_1px_0_10px_rgb(0_0_0)] text-white font-semibold"><%=userInfo.global_name%></h4>
+      <h6 class="text-xs text-white [text-shadow:_1px_0_10px_rgb(0_0_0)]"><%=userInfo.username%></h6>
+    </div>
+  </div>
+</header>
+<hr class="my-4">
+<span class="text-sm">Uptime: <b id="uptime" start=<%=startTime%>></b></span>
+<br>
+<span class="text-sm">Currently part of <b><%=guilds.size%></b> guilds</span>
+<ul class="list-none overflow-y-auto overflow-x-hidden flex flex-wrap gap-2 h-75vh">
+  <% guilds.forEach((guild)=> { %>
+  <li class="bg-white p-2 rounded-md shadow-2xl flex items-center justify-between">
+    <div class="flex flex-col items-center">
+      <span class="text-black text-sm"><%= guild.name %></span>
+      <img class="rounded-full h-20" src="<%=guild.iconURL()%>" alt="guild icon">
+      <span class="text-black text-sm"><%= guild.memberCount%> members</span>
+    </div>
+  </li>
+  <% }); %>
+</ul>
+
+<script type="module">
+  updateUptime();
+  setInterval(updateUptime, 1000);
+
+  function updateUptime() {
+    const uptimeElem = document.getElementById('uptime');
+    uptimeElem.textContent = formatTime(
+      Date.now() - Number(uptimeElem.getAttribute('start'))
+    );
+  }
+
+  function formatTime(milliseconds) {
+    const units = [{
+        label: 'y',
+        divisor: 1000 * 60 * 60 * 24 * 30 * 12
+      },
+      {
+        label: 'm',
+        divisor: 1000 * 60 * 60 * 24 * 30
+      },
+      {
+        label: 'd',
+        divisor: 1000 * 60 * 60 * 24
+      },
+      {
+        label: 'h',
+        divisor: 1000 * 60 * 60
+      },
+      {
+        label: 'm',
+        divisor: 1000 * 60
+      },
+      {
+        label: 's',
+        divisor: 1000
+      },
+    ];
+
+    let output = '';
+    for (const unit of units) {
+      const value = Math.floor(milliseconds / unit.divisor);
+      if (value > 0 || output !== '') {
+        output += `${value.toString().padStart(2, '0')}${unit.label} `;
+        milliseconds %= unit.divisor;
+      }
+    }
+
+    return output.trim();
+  }
+</script>
