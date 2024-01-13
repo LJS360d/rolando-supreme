@@ -1,10 +1,4 @@
-import {
-	GatewayIntentBits as Intents,
-	type ClientOptions,
-	Partials,
-	ActivityType,
-} from 'discord.js';
-import { Logger } from 'fonzi2';
+import { GatewayIntentBits as Intents, Partials, type ClientOptions } from 'discord.js';
 
 const options: ClientOptions = {
 	// allowedMentions: { parse: ['users', 'roles'] },
@@ -21,7 +15,7 @@ const options: ClientOptions = {
 		Intents.DirectMessages,
 		// Intents.GuildEmojisAndStickers,
 		// Intents.GuildIntegrations,
-		// Intents.GuildInvites,
+		Intents.GuildInvites,
 		Intents.GuildMembers,
 		Intents.GuildMessageReactions,
 		Intents.GuildMessageTyping,
@@ -41,15 +35,15 @@ const options: ClientOptions = {
 		// Partials.GuildMember,
 		// Partials.Reaction,
 	],
-	jsonTransformer: (obj) => {
+	/* jsonTransformer: (obj) => {
 		Logger.trace(JSON.stringify(obj, null, 2));
 		return obj;
-	},
-	presence: {
+	}, */
+	/* presence: {
 		activities: [{ name: 'a dumb dev', type: ActivityType.Watching }],
 		afk: false,
-		status: 'online',
-	},
+		status: 'idle',
+	}, */
 };
 
 export default options;

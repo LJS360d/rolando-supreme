@@ -1,21 +1,30 @@
-import { Logger, getRegisteredCommands } from 'fonzi2';
-import { RolandoClient } from './client/client';
-import env from './env';
-import ClientEventsHandler from './handlers/client.events.handler';
+import { Fonzi2Client, getRegisteredCommands, Logger } from 'fonzi2';
+import { connectMongo } from './domain/repositories/mongo.connector';
+import { ChainService } from './domain/services/chain.service';
+import { env } from './env';
+import { ButtonsHandler } from './handlers/buttons.handler';
 import { CommandsHandler } from './handlers/commands.handler';
+import { EventsHandler } from './handlers/events.handler';
 import { MessageHandler } from './handlers/message.handler';
 import options from './options';
+import { GuildsService } from './domain/services/guilds.service';
+import { GuildsRepository } from './domain/repositories/guilds.repository';
 async function main() {
-	new RolandoClient(env.TOKEN, options, [
-		new MessageHandler(),
-		new CommandsHandler(env.VERSION),
-		new ClientEventsHandler(getRegisteredCommands()),
+	const db = await connectMongo(env.MONGODB_URI);
+
+	const chainService = new ChainService(new GuildsRepository());
+	const guildsService = new GuildsService(new GuildsRepository());
+
+	new Fonzi2Client(env.TOKEN, options, [
+		new CommandsHandler(chainService, guildsService),
+		new ButtonsHandler(guildsService),
+		new MessageHandler(chainService, guildsService),
+		new EventsHandler(getRegisteredCommands(), chainService, guildsService),
 	]);
 
 	process.on('uncaughtException', (err: any) => {
-		Logger.error(
-			`${err.name} - ${err.message}\n${err.stack || 'No stack trace available'}`
-		);
+		if (err?.response?.status !== 429)
+			Logger.error(`${err.name}: ${err.message}\n${err.stack}`);
 	});
 
 	process.on('unhandledRejection', (reason: any) => {
@@ -23,9 +32,13 @@ async function main() {
 		if (reason?.response?.status === 429) return;
 	});
 
-	['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach((signal) => {
-		process.on(signal, () => {
-			Logger.warn(`Received ${String(signal)} signal`);
+	['SIGINT', 'SIGTERM'].forEach((signal) => {
+		process.on(signal, async () => {
+			Logger.warn(
+				`Received ${signal} signal, closing &u${db?.name}$ database connection`
+			);
+			await db?.close();
+			process.exit(0);
 		});
 	});
 }
