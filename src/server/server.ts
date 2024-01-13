@@ -1,10 +1,9 @@
 import { Client } from 'discord.js';
 import express, { Request, Response } from 'express';
-import { Fonzi2Server, Fonzi2ServerData } from 'fonzi2';
+import { Fonzi2Server, Fonzi2ServerData, Logger } from 'fonzi2';
 import { resolve } from 'path';
-import session from 'cookie-session';
 
-export class StarterKitServer extends Fonzi2Server {
+export class RolandoServer extends Fonzi2Server {
 	constructor(client: Client, data: Fonzi2ServerData) {
 		super(client, data);
 		this.app.use(express.static(resolve('public')));
@@ -16,7 +15,7 @@ export class StarterKitServer extends Fonzi2Server {
 		this.app.get('/data', this.dataPage.bind(this));
 
 		this.httpServer.on('request', (req, res) => {
-			// Logger.trace(`[${req.method}] ${req.url} ${res.statusCode}`);
+			Logger.trace(`[${req.method}] ${req.url} ${res.statusCode}`);
 		});
 		super.start();
 	}

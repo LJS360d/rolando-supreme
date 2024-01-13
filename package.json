@@ -1,13 +1,13 @@
 {
-  "name": "fonzi2-template",
-  "version": "2.0.0",
+  "name": "rolando-supreme",
+  "version": "0.0.0",
   "description": "",
   "main": "index.js",
   "private": true,
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "pnpm@8.12.1",
+  "packageManager": "pnpm@8.14.1",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsnd --rs --debounce --respawn --clear --transpile-only src/main.ts",
     "build:css": "postcss public/css/tailwind.css -o public/css/styles.css",
