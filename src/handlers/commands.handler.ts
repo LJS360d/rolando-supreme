@@ -25,11 +25,11 @@ export class CommandsHandler extends Handler {
 	}
 
 	@Command({
-		name: 'train',
+		name: 'contribute',
 		description:
 			'Fetches all available messages in the server to be used as training data',
 	})
-	public async train(interaction: ChatInputCommandInteraction) {
+	public async contribute(interaction: ChatInputCommandInteraction) {
 		if (!(await this.checkAdmin(interaction))) return;
 		const confirm = Buttons.confirm('confirm-train');
 		const cancel = Buttons.cancel('cancel-train');
