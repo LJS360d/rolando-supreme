@@ -1,26 +1,39 @@
 import { ButtonInteraction } from 'discord.js';
 import { Button, Handler, HandlerType } from 'fonzi2';
+import { ChainService } from '../domain/services/chain.service';
 import { DataFetchService } from '../domain/services/data.fetch.service';
+import { FETCH_COMPLETE_MSG, FETCH_CONFIRM_MSG, FETCH_DENY_MSG } from '../static/text';
 import { GuildsService } from '../domain/services/guilds.service';
-import { FETCH_COMPLETE_MSG, FETCH_CONFIRM_MSG } from '../static/text';
 
 export class ButtonsHandler extends Handler {
 	public readonly type = HandlerType.buttonInteraction;
-	private dataFetchService: DataFetchService;
 
-	constructor(private guildsService: GuildsService) {
+	constructor(
+		private chainService: ChainService,
+		private guildsService: GuildsService
+	) {
 		super();
-		this.dataFetchService = new DataFetchService(this.client!, this.guildsService);
 	}
 
 	@Button('confirm-train')
 	async onConfirmTrain(interaction: ButtonInteraction<'cached'>) {
 		void interaction.deferUpdate();
+		const guildDoc = await this.guildsService.getOne(interaction.guild);
+		if (guildDoc.contributed) {
+			await interaction.channel?.send({
+				content: FETCH_DENY_MSG(interaction.guild.name),
+			});
+			return;
+		}
 		await interaction.channel?.send({
 			content: FETCH_CONFIRM_MSG(interaction.user.id),
 		});
+		void this.guildsService.update(interaction.guild, undefined, true);
 		const startTime = Date.now();
-		const messages = await this.dataFetchService.fetchAllGuildMessages(interaction.guild);
+		const messages = await new DataFetchService(
+			this.client!,
+			this.chainService
+		).fetchAllGuildMessages(interaction.guild);
 		await interaction.channel?.send({
 			content: FETCH_COMPLETE_MSG(
 				interaction.user.id,
@@ -28,6 +41,8 @@ export class ButtonsHandler extends Handler {
 				Date.now() - startTime
 			),
 		});
+		// ? training performed in the dataFetchService
+		// this.chainService.updateChain(interaction.guildId, messages);
 	}
 
 	@Button('cancel-train')

@@ -1,5 +1,6 @@
 import {
 	Client,
+	Collection,
 	Guild,
 	GuildBasedChannel,
 	GuildTextBasedChannel,
@@ -8,14 +9,14 @@ import {
 } from 'discord.js';
 import { Logger } from 'fonzi2';
 import { containsURL } from '../../utils/url.utils';
-import { GuildsService } from './guilds.service';
+import { ChainService } from './chain.service';
 
 export class DataFetchService {
 	private readonly MSG_LIMIT = 500000;
 	private readonly MSG_FETCH_MAXERRORS = 5;
 	constructor(
 		private client: Client,
-		private guildsService: GuildsService
+		private chainService: ChainService
 	) {}
 
 	async fetchAllGuildMessages(guild: Guild): Promise<string[]> {
@@ -36,38 +37,25 @@ export class DataFetchService {
 		return new Promise(async (resolve) => {
 			const load = Logger.loading(`Fetching messages in #${channel.name}...`);
 			const messages: string[] = [];
-			let lastMessageID: string | undefined = undefined;
+			let lastMessageId: string | undefined = undefined;
 			let remaining = true;
 			let firstFetch = true;
 			let errorCount = 0;
 			while (remaining && messages.length < this.MSG_LIMIT) {
 				try {
-					const messageBatch = await channel.messages.fetch({
-						limit: 100,
-						before: lastMessageID,
-					});
-
-					if (lastMessageID === undefined && !firstFetch) {
+					const messageBatch = await this.getMessageBatch(channel, lastMessageId);
+					if (lastMessageId === undefined && !firstFetch) {
 						remaining = false;
 						continue;
 					}
-
-					messageBatch.forEach((msg: Message) => {
-						if (msg.content && msg.author !== this.client.user) {
-							const message: string = msg.content;
-							if (containsURL(message) || message.split(' ').length > 1) {
-								messages.push(message);
-								// TODO immediatly append messages to text storage
-							}
-						}
-					});
+					lastMessageId = messageBatch.at(-1)?.id;
+					if (firstFetch) firstFetch = false;
+					const textMessages = messageBatch.map((msg) => msg.content);
+					messages.push.apply(messages, textMessages);
+					this.chainService.updateChain(channel.guildId, textMessages);
 					load.update(`Fetched #green${messages.length}$ messages in #${channel.name}`);
-
-					lastMessageID = messageBatch.at(-1)?.id;
-					if (firstFetch) {
-						firstFetch = false;
-					}
 				} catch (error) {
+					errorCount++;
 					Logger.warn(
 						`Message fetching error in ${channel.name} at #green${messages.length}$ messages, current error count: ${errorCount}`
 					);
@@ -76,12 +64,27 @@ export class DataFetchService {
 							`Fetching error limit reached in ${channel.name} at #green${messages.length}$ messages, Error ${error}`
 						);
 						resolve(messages);
+						return;
 					}
 				}
 			}
 			load.success(`Fetched #green${messages.length}$ messages in #${channel.name}`);
 			resolve(messages);
 		});
+	}
+
+	private async getMessageBatch(
+		channel: GuildTextBasedChannel,
+		lastMessageId?: string
+	): Promise<Message<true>[]> {
+		const messageBatch = (await channel.messages.fetch({
+			limit: 100,
+			before: lastMessageId,
+		})) as Collection<string, Message<true>>;
+		const cleanMessages = Array.from(messageBatch.values()).filter(
+			(msg) => msg.content.split(' ').length > 1 || containsURL(msg.content)
+		);
+		return cleanMessages;
 	}
 
 	private hasChannelAccess(channel: GuildBasedChannel): boolean {

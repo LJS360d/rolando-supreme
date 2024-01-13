@@ -4,6 +4,7 @@ import { MediaStorage } from './media.storage';
 export class MarkovChain {
 	public mediaStorage: MediaStorage;
 	state: MarkovState;
+	messageCounter: number;
 
 	constructor(
 		public id: string,
@@ -11,6 +12,7 @@ export class MarkovChain {
 	) {
 		this.mediaStorage = new MediaStorage(this.id);
 		this.state = {};
+		this.messageCounter = 0;
 		this.provideData(messages);
 	}
 
@@ -27,6 +29,7 @@ export class MarkovChain {
 	}
 
 	updateState(message: string): void {
+		this.messageCounter++;
 		if (message.startsWith('https://')) {
 			this.mediaStorage.addMedia(message);
 			return;

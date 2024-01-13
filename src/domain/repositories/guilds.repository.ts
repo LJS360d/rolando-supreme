@@ -1,6 +1,6 @@
 import { Guild } from 'discord.js';
 import { Logger } from 'fonzi2';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { now } from 'mongoose';
 import { join } from 'path';
 import { GuildModel } from './models/guild.model';
@@ -32,25 +32,27 @@ export class GuildsRepository {
 		});
 	}
 
-	async update(guild: Guild, replyRate?: number) {
+	async update(guild: Guild, replyRate?: number, contributed?: boolean) {
 		return await GuildModel.updateOne(
 			{ id: guild.id },
-			{ replyRate: replyRate, name: guild.name, updatedAt: now() }
+			{
+				replyRate: replyRate,
+				name: guild.name,
+				updatedAt: now(),
+				contributed: contributed,
+			}
 		);
 	}
 
 	saveTextData(guildId: string, text: string | string[]): void {
+		if (!existsSync(this.dataFolder)) mkdirSync(this.dataFolder);
 		const messagesFilepath = join(this.dataFolder, `${guildId}.txt`);
-		const fileContent: string = readFileSync(messagesFilepath, this.fileEncoding);
+		if (!existsSync(messagesFilepath)) writeFileSync(messagesFilepath, '');
 		if (typeof text === 'string') {
-			writeFileSync(messagesFilepath, `${fileContent}\n${text}`, this.fileEncoding);
+			appendFileSync(messagesFilepath, text + '\n', this.fileEncoding);
 			return;
 		}
-		writeFileSync(
-			messagesFilepath,
-			`${fileContent}\n${text.join('\n')}`,
-			this.fileEncoding
-		);
+		appendFileSync(messagesFilepath, text.join('\n'), this.fileEncoding);
 	}
 
 	getGuildTextData(messagesFilepath: string) {
@@ -64,6 +66,16 @@ export class GuildsRepository {
 				Logger.info(`Created storage file at ${messagesFilepath}`);
 			}
 			return [];
+		}
+	}
+
+	getGuildContribution(guildId: string) {
+		try {
+			const messagesFilepath = join(this.dataFolder, `${guildId}.txt`);
+			const fileContent: string = readFileSync(messagesFilepath, this.fileEncoding);
+			return fileContent.split('\n').length;
+		} catch (error) {
+			return 0;
 		}
 	}
 

@@ -39,6 +39,9 @@ export class RolandoServer extends Fonzi2Server {
 			userInfo,
 			// ? rolando
 			analytics: this.chainsService.chain.analytics,
+			getGuildContribution: this.chainsService.getGuildContribution.bind(
+				this.chainsService
+			),
 		};
 		this.render(res, 'pages/dashboard', props);
 	}

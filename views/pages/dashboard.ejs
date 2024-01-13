@@ -3,9 +3,9 @@
       <%= version %>
     </b></span>
   <a class="invite" href="<%=inviteLink%>">
-    <h1 class="flex items-center">
+    <h1 class="flex flex-row items-center">
       <img class="h-24 rounded-full mx-4" src="<%=client.user.avatarURL()%>">
-      <%= client.user.tag%>
+      <h2><%= client.user.tag%></h2>
     </h1>
   </a>
   <div style="background-color: <%= userInfo.banner_color %>" class="flex h-min rounded-lg p-2 items-center">
@@ -26,8 +26,10 @@
 <span class="text-sm">Currently part of <b>
     <%=guilds.size%>
   </b> guilds</span>
-<ul class="list-none overflow-y-auto overflow-x-hidden flex flex-wrap gap-2 h-75vh">
-  <% guilds.forEach((guild)=> { %>
+<div class="flex flex-row justify-between">
+
+  <ul class="list-none max-w-[75%] w-full overflow-y-auto overflow-x-hidden flex flex-wrap gap-2 h-75vh">
+    <% guilds.forEach((guild)=> { %>
     <li class="bg-white p-2 rounded-md shadow-2xl flex items-center justify-between">
       <div class="flex flex-col items-center gap-2">
         <span class="text-black text-sm cursor-pointer" onclick=copyToClipboard(<%=guild.id%>)>
@@ -37,13 +39,28 @@
         <span class="text-black text-sm">
           <%= guild.memberCount%> members
         </span>
+        <h3>
+          Contribution:
+        </h3>
+        <span class="text-black text-sm">
+          <%= getGuildContribution(guild.id) %>
+        </span>
       </div>
     </li>
     <% }); %>
-</ul>
-<pre>
-  <%= JSON.stringify(analytics, null, 2)%>
-</pre>
+  </ul>
+  <div class="min-w-fit">
+    <h2><i class="fa fa-solid fa-link"></i> Analytics</h2>
+
+    <% for(const key of Object.keys(analytics)) { %>
+    <div class="flex w-full gap-4 justify-between">
+      <span class="capitalize"><%= key %></span>
+      <pre class="font-bold"><%= analytics[key] %></pre>
+    </div>
+    <% } %>
+    <pre></pre>
+  </div>
+</div>
 
 <script type="module">
   updateUptime();

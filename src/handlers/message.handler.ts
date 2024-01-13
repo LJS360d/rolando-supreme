@@ -23,13 +23,10 @@ export class MessageHandler extends Handler {
 
 		if (content.length > 3) {
 			// * Learning from message
-			this.chainService.updateChain(content, guild.id);
+			this.chainService.updateChain(guild.id, content);
 		}
 
-		const guildDoc =
-			(await this.guildsService.getOne(message.guildId)) ??
-			(await this.guildsService.create(message.guild));
-
+		const guildDoc = await this.guildsService.getOne(message.guild);
 		const mention = content.includes(`<@${this.client?.user?.id}>`);
 		if (mention) {
 			await message.channel.sendTyping();

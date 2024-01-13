@@ -9,8 +9,9 @@ export class GuildsService {
 		return this.guildsRepository.saveTextData(guildId, text);
 	}
 
-	async getOne(guildId: string) {
-		return this.guildsRepository.getOne(guildId);
+	async getOne(guild: Guild) {
+		const guildDocument = await this.guildsRepository.getOne(guild.id);
+		return guildDocument ?? this.create(guild);
 	}
 
 	async getAll() {
@@ -22,8 +23,8 @@ export class GuildsService {
 		return this.guildsRepository.create(guild, replyRate);
 	}
 
-	async update(guild: Guild, replyRate?: number) {
-		return this.guildsRepository.update(guild, replyRate);
+	async update(guild: Guild, replyRate?: number, contributed?: boolean) {
+		return this.guildsRepository.update(guild, replyRate, contributed);
 	}
 
 	async delete(guildId: string) {

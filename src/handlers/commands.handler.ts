@@ -100,7 +100,7 @@ export class CommandsHandler extends Handler {
 	})
 	public async replyrate(interaction: ChatInputCommandInteraction<'cached'>) {
 		const rate = interaction.options.getInteger('rate');
-		const guildDoc = (await this.guildsService.getOne(interaction.guild.id))!;
+		const guildDoc = (await this.guildsService.getOne(interaction.guild))!;
 		if (rate !== null) {
 			const msg = 'You are not authorized to change the reply rate.';
 			if (!(await this.checkAdmin(interaction, msg))) return;

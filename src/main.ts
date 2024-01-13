@@ -17,7 +17,7 @@ async function main() {
 
 	new Fonzi2Client(env.TOKEN, options, [
 		new CommandsHandler(chainService, guildsService),
-		new ButtonsHandler(guildsService),
+		new ButtonsHandler(chainService, guildsService),
 		new MessageHandler(chainService, guildsService),
 		new EventsHandler(getRegisteredCommands(), chainService, guildsService),
 	]);

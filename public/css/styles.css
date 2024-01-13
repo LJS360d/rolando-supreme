@@ -1886,6 +1886,16 @@ html {
 .w-80 {
   width: 20rem !important;
 }
+.w-full {
+  width: 100% !important;
+}
+.min-w-fit {
+  min-width: -moz-fit-content !important;
+  min-width: fit-content !important;
+}
+.max-w-\[75\%\] {
+  max-width: 75% !important;
+}
 .cursor-pointer {
   cursor: pointer !important;
 }
@@ -1896,6 +1906,9 @@ html {
 }
 .list-none {
   list-style-type: none !important;
+}
+.flex-row {
+  flex-direction: row !important;
 }
 .flex-col {
   flex-direction: column !important;
@@ -1914,6 +1927,9 @@ html {
 }
 .gap-2 {
   gap: 0.5rem !important;
+}
+.gap-4 {
+  gap: 1rem !important;
 }
 .overflow-y-auto {
   overflow-y: auto !important;

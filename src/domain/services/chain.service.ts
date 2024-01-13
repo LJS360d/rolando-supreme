@@ -9,7 +9,7 @@ export class ChainService {
 		this.loadChain();
 	}
 
-	updateChain(text: string | string[], guildId: string) {
+	updateChain(guildId: string, text: string | string[]) {
 		if (typeof text === 'string') {
 			this.chain.updateState(text);
 			this.guildsRepository.saveTextData(guildId, text);
@@ -27,7 +27,12 @@ export class ChainService {
 			const messages = this.guildsRepository.getGuildTextData(guild.storagePath);
 			this.chain.provideData(messages);
 		}
-		load.success(`Loaded Supreme chain, Size: #green${this.chain.size}$`);
+		load.success(`Loaded Messages from ${guilds.length} guilds`);
+		Logger.info(`Supreme chain size: #green${this.chain.size}$`);
 		return this.chain;
+	}
+
+	getGuildContribution(guildId: string) {
+		return this.guildsRepository.getGuildContribution(guildId);
 	}
 }

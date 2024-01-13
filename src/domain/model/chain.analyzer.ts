@@ -7,7 +7,8 @@ type ChainAnalytics = {
 	gifs: number;
 	images: number;
 	videos: number;
-	replyRate: number;
+	size: string;
+	messages: number;
 	words: number;
 };
 
@@ -43,8 +44,9 @@ export class MarkovChainAnalyzer {
 			gifs: this.chain.mediaStorage.gifs.size,
 			images: this.chain.mediaStorage.images.size,
 			videos: this.chain.mediaStorage.videos.size,
-			replyRate: this.chain.replyRate,
 			words: Object.keys(this.chain.state).length,
+			size: this.size,
+			messages: this.chain.messageCounter,
 		};
 	}
 }
