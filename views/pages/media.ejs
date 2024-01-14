@@ -1,0 +1,31 @@
+<header class="flex items-end gap-2 mb-4">
+  <button onclick="pruneMedia()" class="btn btn-primary"><i class="fa-solid fa-trash"></i>Prune non-working</button>
+  <form class="flex items-end gap-2 " method="get">
+    <input type="text" name="media" value="<%=mediaType%>" hidden>
+    <label for="start" class="form-control w-full max-w-xs">
+      <span class="label-text">Start</span>
+      <input type="number" value=<%=start%> min=0 placeholder="Start" class="input input-bordered input-primary" name="start" id="start">
+    </label>
+    <label for="end" class="form-control w-full max-w-xs">
+      <span class="label-text">End</span>
+      <input type="number" value=<%=end%> min=-1 placeholder="End" class="input input-bordered input-primary" name="end" id="end">
+    </label>
+    <button class="btn btn-outline btn-primary" type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+  </form>
+</header>
+<div class="grid grid-cols-8 gap-2">
+  <% getSection(media, start, end).forEach((image,index) => { %>
+  <div id="media-<%=index%>" class="media-container border-2 rounded-md">
+    <header class="flex flex-row justify-around">
+      <a class="btn btn-ghost" href="<%=image%>" target="_blank"><i class="fa-solid fa-up-right-from-square"></i></a>
+      <button title="Remove from storage" onclick="removeText('<%=image%>',<%=index%>)" class="btn btn-ghost"><i class="fa-solid fa-eraser"></i></button>
+      <button title="Copy media url" onclick="copyToClipboard('<%=image%>')" class="btn btn-ghost"><i class="fa-solid fa-copy"></i></button>
+    </header>
+    <img loading="lazy" class="media h-40 object-contain" src="<%=image%>" alt="media-<%=index%>">
+  </div>
+  <% }) %>
+</div>
+<script src="js/removeText.js"></script>
+<script src="js/pruneMedia.js"></script>
+<script src="js/copyToClipboard.js"></script>
+<script src="js/showSnackbar.js"></script>

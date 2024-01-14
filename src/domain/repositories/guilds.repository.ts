@@ -1,9 +1,17 @@
 import { Guild } from 'discord.js';
 import { Logger } from 'fonzi2';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import {
+	appendFileSync,
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	writeFileSync,
+} from 'fs';
 import { now } from 'mongoose';
 import { join } from 'path';
 import { GuildModel } from './models/guild.model';
+import { readFile, writeFile } from 'fs/promises';
 
 export class GuildsRepository {
 	private readonly dataFolder = join(process.cwd(), 'messages');
@@ -53,6 +61,19 @@ export class GuildsRepository {
 			return;
 		}
 		appendFileSync(messagesFilepath, text.join('\n'), this.fileEncoding);
+	}
+
+	async deleteTextData(text: string) {
+		await Promise.all(
+			readdirSync(this.dataFolder).map(async (file) => {
+				const filePath = join(this.dataFolder, file);
+				const fileContent = readFileSync(filePath, 'utf-8');
+				if (fileContent.includes(text)) {
+					const newContent = fileContent.replace(`\n` + text, '');
+					writeFileSync(filePath, newContent, 'utf-8');
+				}
+			})
+		);
 	}
 
 	getGuildTextData(messagesFilepath: string) {

@@ -7,6 +7,20 @@
     <label for="sidebar-toggle" aria-label="close sidebar" class="drawer-overlay"></label>
     <ul class="menu w-80 min-h-full bg-base-300 text-base-content">
       <label for="sidebar-toggle" class="justify-start btn btn-ghost"><i class="fa-solid fa-xmark text-xl"></i></label>
+      <% for(const route of routes) {%>
+      <li>
+
+        <a href="<%= route.path %>" class="capitalize">
+          <i class="fa-solid fa-<%= route.icon %>"></i>
+          <span>
+            <%= route.name %>
+          </span>
+          <% if (route.admin) { %>
+          <i class="fa-solid fa-lock"></i>
+          <% } %>
+        </a>
+      </li>
+      <% };%>
     </ul>
   </div>
 </div>

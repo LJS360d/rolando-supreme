@@ -31,6 +31,14 @@ export function formatBytes(bytes: number): string {
 	return `${formattedSize} ${sizes[i]}`;
 }
 
+export function formatNumber(number: number | string) {
+	return number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1'");
+}
+
+export function percentOf(n1: number, n2: number) {
+	return ((n1 / n2) * 100).toFixed(2);
+}
+
 export function toLowerSnakeCase(str: string): string {
 	return str
 		.replace(/([A-Z])/g, '_$1')
@@ -40,4 +48,4 @@ export function toLowerSnakeCase(str: string): string {
 
 export function capitalize(str: string): string {
 	return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-};
+}

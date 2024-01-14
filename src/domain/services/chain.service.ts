@@ -20,6 +20,11 @@ export class ChainService {
 		return this.chain;
 	}
 
+	async removeData(text: string) {
+		this.chain.delete(text);
+		void this.guildsRepository.deleteTextData(text);
+	}
+
 	async loadChain(): Promise<MarkovChain> {
 		const load = Logger.loading('Loading Supreme Chain...');
 		const guilds = await this.guildsRepository.getAll();

@@ -1,4 +1,4 @@
-<header class="navbar bg-base-300 shadow-lg">
+<header class="navbar sticky top-0 bg-base-300 shadow-lg">
   <div class="navbar-start gap-2">
     <label for=<%= sidebarId %> class="btn rounded-full btn-ghost"><i class="fa-solid fa-bars fa-lg"></i></label>
     <h1 class="select-none"><%= title %></h1>
@@ -7,8 +7,7 @@
 
   </div>
   <div class="navbar-end">
-    <select class="select select-secondary capitalize" name="theme"
-      onchange="document.documentElement.setAttribute('data-theme', this.value)">
+    <select class="select select-secondary capitalize" name="theme" onchange="document.documentElement.setAttribute('data-theme', this.value)">
       <% themes.forEach(theme => { %>
       <option class="capitalize" value=<%= theme %>><%= theme %></option>
       <% }) %>
