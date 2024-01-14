@@ -11,10 +11,9 @@ import {
 import { now } from 'mongoose';
 import { join } from 'path';
 import { GuildModel } from './models/guild.model';
-import { readFile, writeFile } from 'fs/promises';
 
 export class GuildsRepository {
-	private readonly dataFolder = join(process.cwd(), 'messages');
+	private readonly dataFolder = join(process.cwd(), '/data');
 	private readonly fileEncoding = 'utf-8';
 	constructor() {}
 
@@ -69,14 +68,15 @@ export class GuildsRepository {
 				const filePath = join(this.dataFolder, file);
 				const fileContent = readFileSync(filePath, 'utf-8');
 				if (fileContent.includes(text)) {
-					const newContent = fileContent.replace(`\n` + text, '');
+					const newContent = fileContent.replace(new RegExp(text, 'g'), '');
 					writeFileSync(filePath, newContent, 'utf-8');
 				}
 			})
 		);
 	}
 
-	getGuildTextData(messagesFilepath: string) {
+	getGuildTextData(guildId: string) {
+		const messagesFilepath = join(this.dataFolder, `${guildId}.txt`);
 		try {
 			const fileContent: string = readFileSync(messagesFilepath, this.fileEncoding);
 			return fileContent.split('\n');

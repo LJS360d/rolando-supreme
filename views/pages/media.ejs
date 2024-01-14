@@ -19,7 +19,7 @@
     <header class="flex flex-row justify-around">
       <a class="btn btn-ghost" href="<%=image%>" target="_blank"><i class="fa-solid fa-up-right-from-square"></i></a>
       <button title="Remove from storage" onclick="removeText('<%=image%>',<%=index%>)" class="btn btn-ghost"><i class="fa-solid fa-eraser"></i></button>
-      <button title="Copy media url" onclick="copyToClipboard('<%=image%>')" class="btn btn-ghost"><i class="fa-solid fa-copy"></i></button>
+      <button title="Copy media url" onclick="copyToClipboard('<%=image%>', 'url')" class="btn btn-ghost"><i class="fa-solid fa-copy"></i></button>
     </header>
     <img loading="lazy" class="media h-40 object-contain" src="<%=image%>" alt="media-<%=index%>">
   </div>

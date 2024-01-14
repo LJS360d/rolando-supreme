@@ -29,7 +29,7 @@ export class ChainService {
 		const load = Logger.loading('Loading Supreme Chain...');
 		const guilds = await this.guildsRepository.getAll();
 		for (const guild of guilds) {
-			const messages = this.guildsRepository.getGuildTextData(guild.storagePath);
+			const messages = this.guildsRepository.getGuildTextData(guild.id);
 			this.chain.provideData(messages);
 		}
 		load.success(`Loaded Messages from ${guilds.length} guilds`);

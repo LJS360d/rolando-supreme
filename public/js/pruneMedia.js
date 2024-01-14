@@ -4,12 +4,15 @@ async function pruneMedia() {
   const fetchPromises = [];
   for (const container of containers) {
     const url = container.getElementsByClassName('media')[0].getAttribute('src');
-    const fetchPromise = fetch(url, { method: 'GET' })
+    const fetchPromise = fetch(url, { method: 'HEAD' })
       .then((res) => {
         if (res.status < 400) return;
         container.remove();
         return removeMedia(url, deletionCounter);
       })
+      .catch(() => {
+        // Ignore Cors/Corb errors
+      });
 
     fetchPromises.push(fetchPromise);
 
