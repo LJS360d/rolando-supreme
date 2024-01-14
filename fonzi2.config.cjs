@@ -4,11 +4,11 @@ module.exports = {
     enabled: true,
     levels: "all",
     remote: {
-      enabled: false,
+      enabled: true,
       levels: "all"
     },
     file: {
-      enabled: false,
+      enabled: true,
       levels: "all",
       path: "logs/"
     }
