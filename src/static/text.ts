@@ -21,6 +21,7 @@ export const FETCH_COMPLETE_MSG = (id: string, amount: number, time: number) => 
 <@${id}> Finished Fetching messages.
 Messages fetched: \`${amount}\`
 Time elapsed: \`${formatTime(time)}\`
+Only __good__ messages were fetched (more than 1 word).
 `;
 
 export const GUILD_CREATE_MSG = (name: string) => `

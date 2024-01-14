@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  axios:
+    specifier: ^1.6.5
+    version: 1.6.5
   cookie-session:
     specifier: ^2.0.0
     version: 2.0.0
