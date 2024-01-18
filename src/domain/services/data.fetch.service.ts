@@ -9,31 +9,32 @@ import {
 } from 'discord.js';
 import { Logger } from 'fonzi2';
 import { containsURL } from '../../utils/url.utils';
-import { ChainService } from './chain.service';
+import { ChainsService } from './chains.service';
 
 export class DataFetchService {
 	private readonly MSG_LIMIT = 500000;
 	private readonly MSG_FETCH_MAXERRORS = 5;
 	constructor(
-		private client: Client,
-		private chainService: ChainService
+		private client: Client<true>,
+		private chainService: ChainsService
 	) {}
 
 	async fetchAllGuildMessages(guild: Guild): Promise<string[]> {
 		Logger.info(`Fetching messages in guild: ${guild.name}`);
-		const fetchPromises: Promise<string[]>[] = [];
-		Array.from(guild.channels.cache.values())
-			.filter((channel) => this.hasChannelAccess(channel))
-			.forEach((channel) => {
-				fetchPromises.push(this.fetchChannelMessages(channel as GuildTextBasedChannel));
-			});
+		const fetchPromises: Promise<string[]>[] =
+			// ? Get all guild channels
+			Array.from(guild.channels.cache.values())
+				// ? Filter to only text channels with read/write access
+				.filter((channel) => this.hasChannelAccess(channel))
+				// ? Start fetching in each channel
+				.map((channel) => this.fetchChannelMessages(channel as GuildTextBasedChannel));
 		const results = await Promise.all(fetchPromises);
 		const messages = results.flat();
 		Logger.info(`Fetched #green${messages.length}$ messages in guild: ${guild.name}`);
 		return messages;
 	}
 
-	async fetchChannelMessages(channel: GuildTextBasedChannel): Promise<string[]> {
+	private async fetchChannelMessages(channel: GuildTextBasedChannel): Promise<string[]> {
 		return new Promise(async (resolve) => {
 			const load = Logger.loading(`Fetching messages in #${channel.name}...`);
 			const messages: string[] = [];
@@ -87,8 +88,9 @@ export class DataFetchService {
 		return cleanMessages;
 	}
 
-	private hasChannelAccess(channel: GuildBasedChannel): boolean {
-		const perms = channel.permissionsFor(this.client.user!)!;
+	private hasChannelAccess(channel: GuildBasedChannel): channel is GuildTextBasedChannel {
+		const perms = channel.permissionsFor(this.client.user);
+		if (!perms) return false;
 		const canReadChannel = perms.has(PermissionFlagsBits.ReadMessageHistory);
 		const canAccessChannel = perms.has(PermissionFlagsBits.SendMessages);
 		const canViewChannel = perms.has(PermissionFlagsBits.ViewChannel);

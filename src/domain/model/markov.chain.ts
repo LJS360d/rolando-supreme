@@ -3,8 +3,8 @@ import { MediaStorage } from './media.storage';
 
 export class MarkovChain {
 	public mediaStorage: MediaStorage;
-	state: MarkovState;
-	messageCounter: number;
+	public state: MarkovState;
+	public messageCounter: number;
 
 	constructor(
 		public id: string,
@@ -28,21 +28,25 @@ export class MarkovChain {
 		messages.forEach((message) => this.updateState(message));
 	}
 
-	updateState(message: string): void {
-		this.messageCounter++;
-		if (message.startsWith('https://')) {
-			this.mediaStorage.addMedia(message);
+	updateState(text: string): void {
+		if (text.startsWith('http')) {
+			this.mediaStorage.addMedia(text);
 			return;
 		}
-		const words = message.split(' ');
+		this.messageCounter++;
 
-		for (let i = 0; i < words.length - 1; i++) {
+		const words = this.tokenize(text);
+
+		for (let i = 0; i < words.length - 2; i++) {
 			const currentWord = words[i];
 			const nextWord = words[i + 1];
+			const nextNextWord = words[i + 2];
 
 			this.state[currentWord] ??= {};
-			this.state[currentWord][nextWord] ??= 0;
-			this.state[currentWord][nextWord]++;
+			this.state[currentWord][nextWord] ??= {};
+			this.state[currentWord][nextWord][nextNextWord] ??= 0;
+
+			this.state[currentWord][nextWord][nextNextWord]++;
 		}
 	}
 
@@ -52,14 +56,22 @@ export class MarkovChain {
 
 		for (let i = 0; i < length; i++) {
 			const nextWords = this.state[currentWord];
+
 			if (!nextWords) {
 				break;
 			}
 
 			const nextWordArray = Object.keys(nextWords);
-			const nextWordWeights = Object.values(nextWords);
+			const nextWordWeights = Object.values(nextWords).map((subState) =>
+				Object.values(subState).reduce((a, b) => a + b, 0)
+			);
 
-			currentWord = this.weightedRandomChoice(nextWordArray, nextWordWeights);
+			// ? Laplace smoothing
+			const smoothedWeights = nextWordWeights.map(
+				(weight) => (weight + 1) / (this.messageCounter + nextWordArray.length)
+			);
+
+			currentWord = this.stochasticChoice(nextWordArray, smoothedWeights);
 			generatedText += ' ' + currentWord;
 		}
 
@@ -74,22 +86,34 @@ export class MarkovChain {
 	}
 
 	delete(message: string) {
-		// Given a message delete it from the markov chain
-		if (message.startsWith('https:')) {
+		if (message.startsWith('https://')) {
 			this.mediaStorage.removeMedia(message);
 		}
 
-		const words = message.split(' ');
-		for (let i = 0; i < words.length - 1; i++) {
+		const words = this.tokenize(message);
+
+		for (let i = 0; i < words.length - 2; i++) {
 			const currentWord = words[i];
 			const nextWord = words[i + 1];
-			if (this.state[currentWord] && this.state[currentWord][nextWord]) {
-				this.state[currentWord][nextWord]--;
+			const nextNextWord = words[i + 2];
+
+			if (
+				this.state[currentWord] &&
+				this.state[currentWord][nextWord] &&
+				this.state[currentWord][nextWord][nextNextWord]
+			) {
+				this.state[currentWord][nextWord][nextNextWord]--;
 			}
 		}
 	}
 
-	private weightedRandomChoice(options: string[], weights: number[]): string {
+	private tokenize(text: string) {
+		const cleanText = text.replace(/[^\w\s]/g, '');
+		const tokens = cleanText.split(/\s+/);
+		return tokens.filter((token) => token.length > 0);
+	}
+
+	private stochasticChoice(options: string[], weights: number[]): string {
 		const totalWeight = weights.reduce((a, b) => a + b, 0);
 		const randomWeight = Math.random() * totalWeight;
 		let weightSum = 0;

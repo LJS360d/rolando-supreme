@@ -27,9 +27,11 @@ export class MarkovChainAnalyzer {
 
 		// O(n) not O(n^2)
 		for (const nextWords of Object.values(this.chain.state)) {
-			for (const wordValue of Object.values(nextWords)) {
-				if (wordValue > this.USE_THRESHOLD) {
-					highValueWords++;
+			for (const nextnextWords of Object.values(nextWords)) {
+				for (const wordValue of Object.values(nextnextWords)) {
+					if (wordValue > this.USE_THRESHOLD) {
+						highValueWords++;
+					}
 				}
 			}
 		}

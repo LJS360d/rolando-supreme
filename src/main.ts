@@ -1,19 +1,23 @@
 import { Fonzi2Client, getRegisteredCommands, Logger } from 'fonzi2';
-import { connectMongo } from './domain/repositories/mongo.connector';
-import { ChainService } from './domain/services/chain.service';
-import { env } from './env';
+import { connectMongo } from './domain/repositories/common/mongo.connector';
+import { TextDataRepository } from './domain/repositories/fs-storage/text-data.repository';
+import { GuildsRepository } from './domain/repositories/guild/guilds.repository';
+import { ChainsService } from './domain/services/chains.service';
+import { GuildsService } from './domain/services/guilds.service';
+import { env, validateEnv } from './env';
 import { ButtonsHandler } from './handlers/buttons.handler';
 import { CommandsHandler } from './handlers/commands.handler';
 import { EventsHandler } from './handlers/events.handler';
 import { MessageHandler } from './handlers/message.handler';
 import options from './options';
-import { GuildsService } from './domain/services/guilds.service';
-import { GuildsRepository } from './domain/repositories/guilds.repository';
 async function main() {
-	const db = await connectMongo(env.MONGODB_URI);
+	validateEnv();
+	const db = await connectMongo(env.MONGODB_URI, 'rolando-supreme');
 
-	const chainService = new ChainService(new GuildsRepository());
-	const guildsService = new GuildsService(new GuildsRepository());
+	const guildsRepository = new GuildsRepository();
+	const textDataRepository = new TextDataRepository();
+	const chainService = new ChainsService(guildsRepository, textDataRepository);
+	const guildsService = new GuildsService(guildsRepository);
 
 	new Fonzi2Client(env.TOKEN, options, [
 		new CommandsHandler(chainService, guildsService),
@@ -30,6 +34,7 @@ async function main() {
 	process.on('unhandledRejection', (reason: any) => {
 		if (reason?.status === 429) return;
 		if (reason?.response?.status === 429) return;
+		Logger.error(reason);
 	});
 
 	['SIGINT', 'SIGTERM'].forEach((signal) => {

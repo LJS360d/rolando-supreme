@@ -1,4 +1,4 @@
-import { getValidUrl, isGifUrl, isImageUrl, isVideoUrl } from '../../utils/url.utils';
+import { isGifUrl, isImageUrl, isVideoUrl, isWorkingUrl } from '../../utils/url.utils';
 
 export class MediaStorage {
 	gifs: Set<string>;
@@ -25,12 +25,30 @@ export class MediaStorage {
 	async getMedia(type: 'gif' | 'video' | 'image'): Promise<string> {
 		switch (type) {
 			case 'gif':
-				return getValidUrl(this.gifs, this.chainId, type);
+				return await this.getValidUrl(this.gifs, type);
 			case 'video':
-				return getValidUrl(this.videos, this.chainId, type);
+				return await this.getValidUrl(this.videos, type);
 			case 'image':
-				return getValidUrl(this.images, this.chainId, type);
+				return await this.getValidUrl(this.images, type);
 		}
+	}
+
+	private async getValidUrl(urlSet: Set<string>, type: string) {
+		const urls = Array.from(urlSet);
+		while (urls.length > 0) {
+			const randomIndex = Math.floor(Math.random() * urls.length);
+			const media = urls.at(randomIndex)!;
+
+			if (await isWorkingUrl(media)) {
+				// Valid URL
+				return media;
+			}
+
+			// Remove invalid URL from set
+			urlSet.delete(media);
+			// TODO also Remove invalid URL from text storage
+		}
+		return `No valid ${type} found`;
 	}
 
 	removeMedia(url: string): void {

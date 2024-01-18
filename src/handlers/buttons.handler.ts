@@ -1,6 +1,6 @@
 import { ButtonInteraction } from 'discord.js';
 import { Button, Handler, HandlerType } from 'fonzi2';
-import { ChainService } from '../domain/services/chain.service';
+import { ChainsService } from '../domain/services/chains.service';
 import { DataFetchService } from '../domain/services/data.fetch.service';
 import { FETCH_COMPLETE_MSG, FETCH_CONFIRM_MSG, FETCH_DENY_MSG } from '../static/text';
 import { GuildsService } from '../domain/services/guilds.service';
@@ -9,7 +9,7 @@ export class ButtonsHandler extends Handler {
 	public readonly type = HandlerType.buttonInteraction;
 
 	constructor(
-		private chainService: ChainService,
+		private chainService: ChainsService,
 		private guildsService: GuildsService
 	) {
 		super();

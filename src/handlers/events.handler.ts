@@ -1,6 +1,6 @@
 import { ApplicationCommandData, Guild } from 'discord.js';
 import { ClientEvent, Handler, HandlerType, Logger } from 'fonzi2';
-import { ChainService } from '../domain/services/chain.service';
+import { ChainsService } from '../domain/services/chains.service';
 import { RolandoServer } from '../server/rolando.server';
 import { GUILD_CREATE_MSG } from '../static/text';
 import { env } from '../env';
@@ -11,7 +11,7 @@ export class EventsHandler extends Handler {
 
 	constructor(
 		private commands: ApplicationCommandData[],
-		private chainsService: ChainService,
+		private chainsService: ChainsService,
 		private guildsService: GuildsService
 	) {
 		super();

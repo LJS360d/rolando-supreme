@@ -8,7 +8,7 @@ module.exports = {
       levels: "all"
     },
     file: {
-      enabled: true,
+      enabled: false,
       levels: "all",
       path: "logs/"
     }

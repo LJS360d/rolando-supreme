@@ -1,26 +1,30 @@
 import { HttpStatusCode } from 'axios';
 import { Client } from 'discord.js';
 import express, { Request, Response } from 'express';
-import { Fonzi2Server, Fonzi2ServerData, Logger } from 'fonzi2';
+import { Fonzi2Server, Fonzi2ServerData } from 'fonzi2';
 import { resolve } from 'path';
-import { ChainService } from '../domain/services/chain.service';
+import { ChainsService } from '../domain/services/chains.service';
 import { formatNumber, percentOf } from '../utils/formatting.utils';
 import { getSection } from '../utils/random.utils';
+import { HxServer } from './hx.server';
 
 export class RolandoServer extends Fonzi2Server {
+	hxServer: HxServer;
 	constructor(
 		client: Client,
 		data: Fonzi2ServerData,
-		private chainsService: ChainService
+		private chainsService: ChainsService
 	) {
 		super(client, data);
 		this.app.use(express.static(resolve('public')));
 		this.app.set('views', [this.app.get('views'), resolve('views')]);
+		this.hxServer = new HxServer(this.app, this.chainsService);
 	}
 
 	override start(): void {
 		//? Add new endpoints and pages here
 		this.app.get('/media', this.media.bind(this));
+		this.app.get('/chat', this.chat.bind(this));
 		this.app.delete('/data', this.removeData.bind(this));
 		this.httpServer.on('request', (req, res) => {
 			// Logger.trace(`[${req.method}] ${req.url} ${res.statusCode}`);
@@ -67,6 +71,18 @@ export class RolandoServer extends Fonzi2Server {
 			return;
 		}
 		res.sendStatus(HttpStatusCode.BadRequest);
+	}
+
+	async chat(req: Request, res: Response) {
+		const userInfo = req.session!['userInfo'];
+		if (!userInfo) {
+			res.redirect('/unauthorized');
+			return;
+		}
+		const props = {
+			chain: this.chainsService.chain,
+		};
+		this.render(res, 'pages/chat', props);
 	}
 
 	async removeData(req: Request, res: Response) {
@@ -117,6 +133,12 @@ export class RolandoServer extends Fonzi2Server {
 				name: 'Dashboard',
 				path: '/dashboard',
 				icon: 'home',
+				admin: true,
+			},
+			{
+				name: 'Chat',
+				path: '/chat',
+				icon: 'comment',
 				admin: true,
 			},
 			{

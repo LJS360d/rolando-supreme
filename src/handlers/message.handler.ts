@@ -1,36 +1,38 @@
 import { Message } from 'discord.js';
 import { MarkovChain } from '../domain/model/markov.chain';
-import { ChainService } from '../domain/services/chain.service';
+import { ChainsService } from '../domain/services/chains.service';
 import { getRandom } from '../utils/random.utils';
 import { Handler, HandlerType, MessageEvent } from 'fonzi2';
 import { GuildsService } from '../domain/services/guilds.service';
 
 export class MessageHandler extends Handler {
 	public readonly type = HandlerType.messageEvent;
-	private chain: MarkovChain;
 	constructor(
-		private chainService: ChainService,
+		private chainService: ChainsService,
 		private guildsService: GuildsService
 	) {
 		super();
-		this.chain = this.chainService.chain;
 	}
 
 	@MessageEvent('GuildText')
 	async onGuildMessage(message: Message<true>) {
 		const { author, guild, content } = message;
-		if (author.id === this.client?.user?.id) return;
 
+		if (author.id === this.client?.user?.id) return;
+		const lang = await this.guildsService.getGuildLanguage(guild.id);
 		if (content.length > 3) {
 			// * Learning from message
-			this.chainService.updateChain(guild.id, content);
+			this.chainService.updateChain(lang, content);
 		}
 
+		const chain = (await this.chainService.getChainForGuild(guild.id))!;
+
 		const guildDoc = await this.guildsService.getOne(message.guild);
-		const mention = content.includes(`<@${this.client?.user?.id}>`);
+		const mention = message.mentions.users.some((value) => value === this.client?.user);
+
 		if (mention) {
 			await message.channel.sendTyping();
-			void message.reply(await this.getMessage(this.chain));
+			void message.reply(await this.getMessage(chain));
 			return;
 		}
 		const randomMessage =
@@ -38,7 +40,7 @@ export class MessageHandler extends Handler {
 			(guildDoc.replyRate > 1 && getRandom(1, guildDoc.replyRate) === 1);
 		if (randomMessage) {
 			await message.channel.sendTyping();
-			void message.channel.send(await this.getMessage(this.chain));
+			void message.channel.send(await this.getMessage(chain));
 			return;
 		}
 	}
