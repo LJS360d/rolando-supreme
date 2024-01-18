@@ -1,27 +1,28 @@
 import {
+	ApplicationCommandOptionType,
 	ChatInputCommandInteraction,
 	PermissionsBitField,
-	EmbedBuilder,
-	ApplicationCommandOptionType,
 } from 'discord.js';
 
-import { env } from '../env';
+import { ActionRow, Buttons, Command, Handler, HandlerType } from 'fonzi2';
 import { ChainsService } from '../domain/services/chains.service';
+import { GuildsService } from '../domain/services/guilds.service';
+import {
+	Language,
+	LanguageChoices,
+	LanguageKeysIterator,
+} from '../domain/types/languages';
+import { env } from '../env';
 import { TRAIN_REPLY } from '../static/text';
 import { getRandom } from '../utils/random.utils';
-import { ActionRow, Buttons, Command, Handler, HandlerType } from 'fonzi2';
-import { MarkovChain } from '../domain/model/markov.chain';
-import { GuildsService } from '../domain/services/guilds.service';
 
 export class CommandsHandler extends Handler {
 	public readonly type = HandlerType.commandInteraction;
-	private chain: MarkovChain;
 	constructor(
 		private chainService: ChainsService,
 		private guildsService: GuildsService
 	) {
 		super();
-		this.chain = this.chainService.chain;
 	}
 
 	@Command({
@@ -43,47 +44,23 @@ export class CommandsHandler extends Handler {
 
 	@Command({ name: 'gif', description: 'Returns a gif from the ones it knows' })
 	public async gif(interaction: ChatInputCommandInteraction<'cached'>) {
-		void interaction.reply({ content: await this.chain.mediaStorage.getMedia('gif') });
+		const guildId = interaction.guildId;
+		const chain = await this.chainService.getChainForGuild(guildId);
+		void interaction.reply({ content: await chain.mediaStorage.getMedia('gif') });
 	}
 
 	@Command({ name: 'image', description: 'Returns a image from the ones it knows' })
 	public async image(interaction: ChatInputCommandInteraction<'cached'>) {
-		void interaction.reply({ content: await this.chain.mediaStorage.getMedia('image') });
+		const guildId = interaction.guildId;
+		const chain = await this.chainService.getChainForGuild(guildId);
+		void interaction.reply({ content: await chain.mediaStorage.getMedia('image') });
 	}
 
 	@Command({ name: 'video', description: 'Returns a video from the ones it knows' })
 	public async video(interaction: ChatInputCommandInteraction<'cached'>) {
-		void interaction.reply({ content: await this.chain.mediaStorage.getMedia('video') });
-	}
-
-	@Command({ name: 'analytics', description: 'Returns the analytics of the bot' })
-	public async analytics(interaction: ChatInputCommandInteraction<'cached'>) {
-		const analytics = this.chain.analytics;
-		const embed = new EmbedBuilder()
-			.setTitle('Analytics')
-			.setDescription(
-				'Complexity Score indicates how _smart_ the bot is.\n Higher value means smarter'
-			)
-			.setColor('Gold')
-			.addFields(
-				{
-					name: 'Complexity Score',
-					value: `\`${analytics.complexityScore}\``,
-					inline: true,
-				},
-				{
-					name: 'Vocabulary',
-					value: `\`${analytics.words} words\` `,
-					inline: true,
-				},
-				{ name: '\t', value: '\t' },
-				{ name: 'Gifs', value: `\`${analytics.gifs}\``, inline: true },
-				{ name: 'Videos', value: `\`${analytics.videos}\``, inline: true },
-				{ name: 'Images', value: `\`${analytics.images}\``, inline: true }
-			);
-		void interaction.reply({
-			embeds: [embed],
-		});
+		const guildId = interaction.guildId;
+		const chain = await this.chainService.getChainForGuild(guildId);
+		void interaction.reply({ content: await chain.mediaStorage.getMedia('video') });
 	}
 
 	@Command({
@@ -104,11 +81,40 @@ export class CommandsHandler extends Handler {
 		if (rate !== null) {
 			const msg = 'You are not authorized to change the reply rate.';
 			if (!(await this.checkAdmin(interaction, msg))) return;
-			await this.guildsService.update(interaction.guild, rate);
+			await this.guildsService.update(interaction.guildId, { replyRate: rate });
 			void interaction.reply({ content: `Set reply rate to \`${rate}\`` });
 			return;
 		}
 		await interaction.reply({ content: `Current rate is \`${guildDoc.replyRate}\`` });
+	}
+
+	@Command({
+		name: 'language',
+		description: "check or set the server's language",
+		options: [
+			{
+				name: 'language',
+				description: 'the language to set',
+				type: ApplicationCommandOptionType.String,
+				required: false,
+				choices: LanguageChoices,
+			},
+		],
+	})
+	public async language(interaction: ChatInputCommandInteraction<'cached'>) {
+		const lang = interaction.options.getString('language');
+		const guildDoc = (await this.guildsService.getOne(interaction.guild))!;
+		if (lang !== null) {
+			const msg = 'You are not authorized to change the language.';
+			if (!(await this.checkAdmin(interaction, msg))) return;
+			await this.guildsService.update(interaction.guildId, {
+				language: lang,
+				name: guildDoc.name,
+			});
+			void interaction.reply({ content: `Set server language to \`${lang}\`` });
+			return;
+		}
+		await interaction.reply({ content: `Current language is \`${guildDoc.language}\`` });
 	}
 
 	@Command({
@@ -125,7 +131,9 @@ export class CommandsHandler extends Handler {
 	})
 	public async opinion(interaction: ChatInputCommandInteraction<'cached'>) {
 		const about = interaction.options.getString('about')!.split(' ').at(-1)!;
-		const msg = this.chain.generateText(about, getRandom(8, 40));
+		const guildId = interaction.guildId;
+		const chain = await this.chainService.getChainForGuild(guildId);
+		const msg = chain.generateText(about, getRandom(8, 40));
 		void interaction.reply({ content: msg });
 		return;
 	}

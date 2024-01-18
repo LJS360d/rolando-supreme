@@ -1,4 +1,4 @@
-import { Model, Document, UpdateQuery } from 'mongoose';
+import { Model, Document, UpdateQuery, now } from 'mongoose';
 
 export class BaseRepository<T extends Document> {
 	public entity: Model<T>;
@@ -12,11 +12,13 @@ export class BaseRepository<T extends Document> {
 	}
 
 	async create(fields: any): Promise<T> {
-		return await this.entity.create(fields);
+		return await this.entity.create({ updatedAt: now(), ...fields });
 	}
 
 	async update(id: string, fields: UpdateQuery<T>) {
-		return await this.entity.updateOne({ id }, fields, { new: true }).exec();
+		return await this.entity
+			.updateOne({ id }, { updatedAt: now(), ...fields }, { new: true })
+			.exec();
 	}
 
 	async delete(id: string) {

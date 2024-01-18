@@ -25,7 +25,7 @@ export class MessageHandler extends Handler {
 			this.chainService.updateChain(lang, content);
 		}
 
-		const chain = (await this.chainService.getChainForGuild(guild.id))!;
+		const chain = await this.chainService.getChainForGuild(guild.id);
 
 		const guildDoc = await this.guildsService.getOne(message.guild);
 		const mention = message.mentions.users.some((value) => value === this.client?.user);

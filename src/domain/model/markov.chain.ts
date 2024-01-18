@@ -80,7 +80,9 @@ export class MarkovChain {
 
 	talk(length: number): string {
 		const keys = Object.keys(this.state);
-		const randomIndex = Math.floor(Math.random() * keys.length);
+		console.log(keys.length);
+
+		const randomIndex = Math.floor(Math.random() * keys.length - 1);
 		const starterWord = keys[randomIndex];
 		return this.generateText(starterWord, length).trim();
 	}

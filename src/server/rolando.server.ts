@@ -4,9 +4,12 @@ import express, { Request, Response } from 'express';
 import { Fonzi2Server, Fonzi2ServerData } from 'fonzi2';
 import { resolve } from 'path';
 import { ChainsService } from '../domain/services/chains.service';
+import { Language } from '../domain/types/languages';
 import { formatNumber, percentOf } from '../utils/formatting.utils';
 import { getSection } from '../utils/random.utils';
 import { HxServer } from './hx.server';
+
+type MediaUnion = 'gifs' | 'images' | 'videos';
 
 export class RolandoServer extends Fonzi2Server {
 	hxServer: HxServer;
@@ -46,24 +49,28 @@ export class RolandoServer extends Fonzi2Server {
 			inviteLink: this.data.inviteLink,
 			userInfo,
 			// ? rolando
-			analytics: this.chainsService.chain.analytics,
-			formatNumber,
-			percentOf,
-			getGuildContribution: this.chainsService.getGuildContribution.bind(
-				this.chainsService
-			),
+			chains: this.chainsService.getAllChains(),
 		};
 		this.render(res, 'pages/dashboard', props);
 	}
 
-	async media(req: Request, res: Response) {
-		const { media, start, end } = req.query;
+	async media(
+		req: Request<
+			any,
+			any,
+			any,
+			{ lang: Language; media: MediaUnion; start: number; end: number }
+		>,
+		res: Response
+	) {
+		const { lang, media, start, end } = req.query;
 		if (media && typeof media === 'string') {
+			const chain = this.chainsService.getChain(lang);
 			const props = {
 				mediaType: media,
-				media: this.chainsService.chain.mediaStorage[media ?? 'images'],
+				media: chain.mediaStorage[media ?? 'images'],
 				getSection,
-				wipe: this.chainsService.chain.delete.bind(this.chainsService.chain),
+				wipe: chain.delete.bind(chain),
 				start: start ? Number(start) : 0,
 				end: end ? Number(end) : 80,
 			};
@@ -73,32 +80,35 @@ export class RolandoServer extends Fonzi2Server {
 		res.sendStatus(HttpStatusCode.BadRequest);
 	}
 
-	async chat(req: Request, res: Response) {
+	async chat(req: Request<any, any, any, { lang: Language }>, res: Response) {
 		const userInfo = req.session!['userInfo'];
 		if (!userInfo) {
 			res.redirect('/unauthorized');
 			return;
 		}
+
+		const { lang } = req.query;
+
 		const props = {
-			chain: this.chainsService.chain,
+			chain: this.chainsService.getChain(lang),
 		};
 		this.render(res, 'pages/chat', props);
 	}
 
-	async removeData(req: Request, res: Response) {
+	async removeData(
+		req: Request<any, any, any, { lang: Language; text: string }>,
+		res: Response
+	) {
 		const userInfo = req.session!['userInfo'];
 		if (!userInfo) {
 			res.sendStatus(HttpStatusCode.Unauthorized);
 			return;
 		}
-		const { text } = req.query;
-
-		if (typeof text === 'string') {
-			void this.chainsService.removeData(text);
-			void this.chainsService.removeData(encodeURIComponent(text));
-			res.sendStatus(HttpStatusCode.NoContent);
-			return;
-		}
+		const { lang, text } = req.query;
+		void this.chainsService.removeData(lang, text);
+		void this.chainsService.removeData(lang, encodeURIComponent(text));
+		res.sendStatus(HttpStatusCode.NoContent);
+		return;
 	}
 
 	private render(res: Response, page: string, props: any, options?: any) {
@@ -137,7 +147,7 @@ export class RolandoServer extends Fonzi2Server {
 			},
 			{
 				name: 'Chat',
-				path: '/chat',
+				path: '/chat?lang=eng',
 				icon: 'comment',
 				admin: true,
 			},

@@ -3,14 +3,14 @@ import { Logger } from 'fonzi2';
 import { UpdateQuery } from 'mongoose';
 import { GuildsRepository } from '../repositories/guild/guilds.repository';
 import { GuildDocument } from '../repositories/guild/models/guild.model';
-import { Language } from '../types/languages';
+import { Language, LanguageUndefined } from '../types/languages';
 
 export class GuildsService {
 	constructor(private guildsRepository: GuildsRepository) {}
 
 	async getGuildLanguage(guildId: string) {
 		const guildDocument = await this.guildsRepository.getOne(guildId);
-		return guildDocument?.language ?? 'und';
+		return guildDocument?.language ?? LanguageUndefined;
 	}
 
 	async getOne(guild: Guild) {
@@ -34,12 +34,8 @@ export class GuildsService {
 		return this.guildsRepository.create(createObj);
 	}
 
-	async update(guild: Guild, ...fields: any[]) {
-		const updateObj: UpdateQuery<GuildDocument> = {
-			name: guild.name,
-			...fields,
-		};
-		return this.guildsRepository.update(guild.id, updateObj);
+	async update(guildId: string, updateObj: UpdateQuery<GuildDocument>) {
+		return this.guildsRepository.update(guildId, updateObj);
 	}
 
 	async delete(guildId: string) {

@@ -2,6 +2,7 @@ import { Logger } from 'fonzi2';
 import { MarkovChain } from '../model/markov.chain';
 import { GuildsRepository } from '../repositories/guild/guilds.repository';
 import { TextDataRepository } from '../repositories/fs-storage/text-data.repository';
+import { LanguageUndefined } from '../types/languages';
 
 export class ChainsService {
 	public readonly chainsMap: Map<string, MarkovChain> = new Map();
@@ -16,13 +17,17 @@ export class ChainsService {
 	async getChainForGuild(guildId: string) {
 		const lang = await this.guildsRepository.getGuildLanguage(guildId);
 		const chain = this.chainsMap.get(lang);
-		return chain;
+		return chain ?? this.getChain(LanguageUndefined);
 	}
 
 	getChain(lang: string) {
 		const chain = this.chainsMap.get(lang);
 		if (chain) return chain;
 		return this.createChain(lang);
+	}
+
+	getAllChains() {
+		return [...this.chainsMap.values()];
 	}
 
 	createChain(lang: string): MarkovChain {
