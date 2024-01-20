@@ -1,6 +1,5 @@
 <header class="flex justify-center">
-  <a class="btn btn-ghost h-min flex flex-row items-center"
-      href="<%=inviteLink%>">
+  <a class="btn btn-ghost h-min flex flex-row items-center" href="<%=inviteLink%>">
     <h1 class="flex flex-row items-center">
       <img class="h-24 rounded-full mx-4" src="<%=client.user.avatarURL()%>">
       <h2 class="text-lg font-semibold"><%= client.user.tag%></h2>
@@ -10,80 +9,111 @@
 <hr class="my-4">
 <span class="text-sm">Uptime: <b id="uptime" start=<%=startTime%>></b></span>
 <br>
-<span class="text-sm">Currently part of <b>
-    <%=guilds.size%>
-  </b> guilds</span>
+<div>
+  <span class="block text-sm">Running <b><%=chains.length%></b> chains</span>
+  <span class="block text-sm">Currently part of <b><%=guilds.size%></b> guilds</span>
+</div>
 <div class="flex flex-row justify-between">
-
-  <ul
-      class="list-none max-w-[75%] w-full overflow-y-auto overflow-x-hidden flex flex-wrap gap-2 h-75vh">
+  <!-- guilds -->
+  <ul class="list-none max-w-[45%] w-full overflow-y-auto overflow-x-hidden flex flex-wrap gap-2 h-75vh">
     <% guilds.forEach((guild)=> { %>
-    <li
-        class="bg-neutral p-2 rounded-md w-fit shadow-2xl flex items-center justify-between">
-      <div class="flex flex-col  items-center gap-2">
-        <button
-            class="p-1 btn btn-ghost h-min flex flex-col gap-2 justify-center items-center w-max"
-            onclick="copyToClipboard(<%=guild.id%>, 'Guild ID')">
-          <span class="overflow-clip text-ellipsis text-sm text-nowrap w-28">
+    <li class="bg-neutral p-2 rounded-md w-fit shadow-2xl flex items-center justify-between">
+      <div title="<%= guild.name %>" class="flex flex-col items-center gap-2">
+        <button class="p-1 btn btn-ghost h-min flex flex-col gap-2 justify-center items-center w-max"
+          onclick="copyToClipboard(<%=guild.id%>, 'Guild ID')">
+          <span class="overflow-clip text-ellipsis text-sm text-nowrap w-16">
             <%= guild.name %>
           </span>
-          <img class="rounded-full w-24 shadow-around"
-              src="<%=guild.iconURL() ?? 'assets/noimage.svg'%>"
-              alt="guild icon">
+          <img class="rounded-full w-12 shadow-around" src="<%=guild.iconURL() ?? 'assets/noimage.svg'%>"
+            alt="guild icon">
           <span class="overflow-clip text-ellipsis text-sm text-nowrap w-28">
             <%= guild.memberCount%> members
           </span>
         </button>
-
       </div>
     </li>
     <% }); %>
   </ul>
+  <!-- chains -->
+  <ul class="list-none max-w-[45%] w-full overflow-y-auto overflow-x-hidden flex flex-wrap gap-2 h-75vh">
+    <% chains.forEach((chain) => { %>
+    <li class="bg-neutral p-2 rounded-md w-fit h-fit shadow-2xl flex items-center justify-between">
+      <div class="flex flex-col items-center gap-2">
+        <span class="flag-icon flag-icon-ita"></span>
+        <button class="p-1 btn btn-ghost h-min flex flex-col gap-2 justify-center items-center w-max"
+          onclick="copyToClipboard('<%=chain.id%>', 'Chain ID')">
+          <a href="/chain?lang=<%= chain.id %>"><i class="fa-solid fa-link"></i>Analytics</a>
+          <span>Language:
+            <b class="capitalize text-green-500"><%= chain.id %></b>
+          </span>
+          <span>Complexity: <b>
+              <%= chain.analytics.complexityScore %>
+            </b></span>
+          <span>Vocabulary: <b>
+              <%= chain.analytics.words %>
+            </b></span>
+          <span>Messages: <b>
+              <%= chain.analytics.messages %>
+            </b></span>
+          <span>Gifs: <b>
+              <%= chain.analytics.gifs %>
+            </b></span>
+          <span>Videos: <b>
+              <%= chain.analytics.videos %>
+            </b></span>
+          <span>Images: <b>
+              <%= chain.analytics.images %>
+            </b></span>
 
+        </button>
+      </div>
+    </li>
+    <% }); %>
+  </ul>
 </div>
 
 <script type="module">
   updateUptime();
-  setInterval( updateUptime, 1000 );
+  setInterval(updateUptime, 1000);
 
   function updateUptime() {
-    const uptimeElem = document.getElementById( 'uptime' );
+    const uptimeElem = document.getElementById('uptime');
     uptimeElem.textContent = formatTime(
-      Date.now() - Number( uptimeElem.getAttribute( 'start' ) )
+      Date.now() - Number(uptimeElem.getAttribute('start'))
     );
   }
 
-  function formatTime( milliseconds ) {
-    const units = [ {
-        label: 'y',
-        divisor: 1000 * 60 * 60 * 24 * 30 * 12
-      },
-      {
-        label: 'm',
-        divisor: 1000 * 60 * 60 * 24 * 30
-      },
-      {
-        label: 'd',
-        divisor: 1000 * 60 * 60 * 24
-      },
-      {
-        label: 'h',
-        divisor: 1000 * 60 * 60
-      },
-      {
-        label: 'm',
-        divisor: 1000 * 60
-      },
-      {
-        label: 's',
-        divisor: 1000
-      },
+  function formatTime(milliseconds) {
+    const units = [{
+      label: 'y',
+      divisor: 1000 * 60 * 60 * 24 * 30 * 12
+    },
+    {
+      label: 'm',
+      divisor: 1000 * 60 * 60 * 24 * 30
+    },
+    {
+      label: 'd',
+      divisor: 1000 * 60 * 60 * 24
+    },
+    {
+      label: 'h',
+      divisor: 1000 * 60 * 60
+    },
+    {
+      label: 'm',
+      divisor: 1000 * 60
+    },
+    {
+      label: 's',
+      divisor: 1000
+    },
     ];
 
     let output = '';
-    for ( const unit of units ) {
-      const value = Math.floor( milliseconds / unit.divisor );
-      if ( value > 0 || output !== '' ) {
+    for (const unit of units) {
+      const value = Math.floor(milliseconds / unit.divisor);
+      if (value > 0 || output !== '') {
         output += `${value.toString().padStart(2, '0')}${unit.label} `;
         milliseconds %= unit.divisor;
       }

@@ -1,12 +1,35 @@
 <div>
-  <ul id="messageList" class="overflow-auto max-h-[38rem] flex flex-col list-none">
-    <a hx-get="/message" hx-swap="innerHTML" hx-trigger="load"></a>
+  <ul id="messageList"
+      class="overflow-auto max-h-[38rem] flex flex-col list-none">
+    <a hx-get="/hx/message?lang=<%=lang%>" hx-swap="innerHTML"
+        hx-trigger="load"></a>
+    <a hx-get="/hx/message?lang=<%=lang%>" hx-swap="innerHTML"
+        hx-trigger="load"></a>
+    <a hx-get="/hx/message?lang=<%=lang%>" hx-swap="innerHTML"
+        hx-trigger="load"></a>
+    <a hx-get="/hx/message?lang=<%=lang%>" hx-swap="innerHTML"
+        hx-trigger="load"></a>
+    <a hx-get="/hx/message?lang=<%=lang%>" hx-swap="innerHTML"
+        hx-trigger="load"></a>
+    <a hx-get="/hx/message?lang=<%=lang%>" hx-swap="innerHTML"
+        hx-trigger="load"></a>
+    <a hx-get="/hx/message?lang=<%=lang%>" hx-swap="innerHTML"
+        hx-trigger="load"></a>
+    <a hx-get="/hx/message?lang=<%=lang%>" hx-swap="innerHTML"
+        hx-trigger="load"></a>
+    <a hx-get="/hx/message?lang=<%=lang%>" hx-swap="innerHTML"
+        hx-trigger="load"></a>
+    <a hx-get="/hx/message?lang=<%=lang%>" hx-swap="innerHTML"
+        hx-trigger="load"></a>
   </ul>
   <footer class="absolute max-w-[98svw] bottom-0 px-0 py-8 m-0 footer">
-    <form class="join w-full join-horizontal" hx-get="/message" hx-target="#messageList" hx-swap="innerHTML">
-      <input class="input w-full input-primary join-item" type="text" id="messageInput" autocomplete="off" required>
+    <form class="join w-full join-horizontal"
+        hx-get="/hx/message?lang=<%=lang%>" hx-target="#messageList"
+        hx-swap="beforeend">
+      <input class="input w-full input-primary join-item" type="text"
+          id="messageInput" autocomplete="off" required>
       <button class="btn btn-primary btn-outline join-item" type="submit"><i
-          class="fa-solid fa-paper-plane"></i></button>
+            class="fa-solid fa-paper-plane"></i></button>
     </form>
   </footer>
 </div>

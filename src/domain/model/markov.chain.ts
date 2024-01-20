@@ -75,7 +75,7 @@ export class MarkovChain {
 			generatedText += ' ' + currentWord;
 		}
 
-		return generatedText;
+		return generatedText ?? '';
 	}
 
 	talk(length: number): string {

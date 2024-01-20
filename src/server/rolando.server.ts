@@ -1,6 +1,6 @@
 import { Client } from 'discord.js';
 import express, { Request, Response } from 'express';
-import { Fonzi2Server, Fonzi2ServerData, Logger } from 'fonzi2';
+import { Fonzi2Server, Fonzi2ServerData } from 'fonzi2';
 import { resolve } from 'path';
 import 'reflect-metadata';
 import { useContainer, useExpressServer } from 'routing-controllers';
@@ -11,6 +11,8 @@ import { ActionsController } from './controllers/actions.controller';
 import { HxController } from './controllers/hx.controller';
 import { ViewsController } from './controllers/views.controller';
 import { baseRenderOptions } from './render';
+import { Props, RenderOptions } from './types/render-options';
+import { SessionAuthGuard } from './guards/session.auth.guard';
 
 export class RolandoServer extends Fonzi2Server {
 	constructor(
@@ -27,10 +29,12 @@ export class RolandoServer extends Fonzi2Server {
 	}
 
 	override async start() {
+		Container.set(SessionAuthGuard, new SessionAuthGuard());
 		useContainer(Container);
 		useExpressServer(this.app, {
 			controllers: this.getRegisteredControllers(),
 			cors: true,
+			authorizationChecker: SessionAuthGuard.checkAuth,
 			development: env.NODE_ENV === 'development',
 		});
 		super.start();

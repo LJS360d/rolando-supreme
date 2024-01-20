@@ -7,7 +7,7 @@ export const RoutesIterator: Route[] = [
 	},
 	{
 		name: 'Chat',
-		path: '/chat?lang=eng',
+		path: '/chat/eng',
 		icon: 'comment',
 		admin: true,
 	},

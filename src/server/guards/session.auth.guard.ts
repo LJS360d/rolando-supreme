@@ -1,18 +1,16 @@
-import { Request, Response } from 'express';
-import { Action, UnauthorizedError } from 'routing-controllers';
+import { Request } from 'express';
+import { Action } from 'routing-controllers';
 
 export class SessionAuthGuard {
-	async intercept(action: Action, result: any): Promise<any> {
+	static async checkAuth(action: Action): Promise<boolean> {
 		const req: Request = action.request;
-		const res: Response = action.response;
 
 		const userInfo = req.session!.userInfo;
 
 		if (!userInfo) {
-			res.redirect('/unauthorized');
-			return Promise.reject(new UnauthorizedError('Not authorized'));
+			return false;
 		}
 
-		return result;
+		return true;
 	}
 }

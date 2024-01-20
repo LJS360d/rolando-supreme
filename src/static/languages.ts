@@ -15,7 +15,7 @@ export const LanguageKeysIterator = Object.keys(Language);
 export type LanguageUnion = keyof typeof Language;
 
 export const isLanguage = (value: string): value is Language =>
-	LanguageKeysIterator.includes(value);
+	(LanguagesIterator as string[]).includes(value);
 
 export const LanguageChoices: { value: Language; name: LanguageUnion }[] = Object.entries(
 	Language

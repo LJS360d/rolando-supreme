@@ -1,13 +1,26 @@
-import { Delete, JsonController, Param, UseInterceptor } from 'routing-controllers';
-import { Language } from '../../static/languages';
-import { SessionAuthGuard } from '../guards/session.auth.guard';
+import {
+	Authorized,
+	Delete,
+	HttpCode,
+	JsonController,
+	Param,
+	QueryParam,
+} from 'routing-controllers';
+import { Service } from 'typedi';
+import { ChainsService } from '../../domain/services/chains.service';
+import { Language, LanguageUndefined, isLanguage } from '../../static/languages';
 
 @JsonController()
 export class ActionsController {
-	// TODO use auth guard
+	constructor(@Service() private chainsService: ChainsService) {}
+
 	@Delete('/data/:lang')
-	@UseInterceptor(SessionAuthGuard)
-	async removeData(@Param('lang') lang: Language) {
-		// TODO impl
+	@HttpCode(204)
+	@Authorized()
+	async removeData(@Param('lang') lang: string, @QueryParam('text') text: string) {
+		lang ??= Language.english;
+		if (!isLanguage(lang)) lang = LanguageUndefined;
+		this.chainsService.removeData(lang, text);
+		return null;
 	}
 }

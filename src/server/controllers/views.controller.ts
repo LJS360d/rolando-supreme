@@ -1,30 +1,43 @@
-import { Controller, Get, Param, QueryParam, Res, Session } from 'routing-controllers';
+import { DiscordUserInfo } from 'fonzi2/dist/types/discord.user.info';
+import {
+	Authorized,
+	Controller,
+	Get,
+	Param,
+	QueryParam,
+	Session,
+} from 'routing-controllers';
 import { Service } from 'typedi';
 import { ChainsService } from '../../domain/services/chains.service';
+import { Language, LanguageUndefined, isLanguage } from '../../static/languages';
+import { Media } from '../../static/media';
 import { render } from '../render';
-import { Response } from 'express';
-import { DiscordUserInfo } from 'fonzi2/dist/types/discord.user.info';
 
 @Controller()
 export class ViewsController {
 	constructor(@Service() private chainsService: ChainsService) {}
 
-	@Get('/hi')
-	hi() {
-		return 'hi';
-	}
-
 	@Get('/media/:type')
 	async media(
-		@QueryParam('lang') lang: string,
-		@Param('type') type: 'gifs' | 'images' | 'videos',
-		@Session() session: { userInfo?: DiscordUserInfo }
+		@Session() session: { userInfo?: DiscordUserInfo },
+		@Param('type') type?: string,
+		@QueryParam('lang') lang?: string,
+		@QueryParam('start') start?: number | null,
+		@QueryParam('end') end?: number | null
 	) {
+		lang ??= Language.english;
+		if (!isLanguage(lang)) lang = LanguageUndefined;
+		type ??= Media.Images;
+		start ??= 0;
+		end ??= 80;
 		const chain = this.chainsService.getChain(lang);
+		const media = Array.from(chain.mediaStorage[type]).slice(start, end);
 		const props = {
-			mediaType: type,
-			media: chain.mediaStorage[type ?? 'images'],
-			wipe: chain.delete.bind(chain),
+			start,
+			end,
+			lang,
+			media,
+			langs: this.chainsService.getAllChains().map((c) => c.id),
 		};
 		const options = {
 			userInfo: session.userInfo,
@@ -32,18 +45,20 @@ export class ViewsController {
 		return await render('pages/media', props, options);
 	}
 
-	/* async chat(req: Request<any, any, any, { lang: Language }>, res: Response) {
-		const userInfo = req.session!['userInfo'];
-		if (!userInfo) {
-			res.redirect('/unauthorized');
-			return;
-		}
-
-		const { lang } = req.query;
-
+	@Get('/chat/:lang')
+	@Authorized()
+	async chat(
+		@Session() session: { userInfo?: DiscordUserInfo },
+		@Param('lang') lang: string
+	) {
+		if (!isLanguage(lang)) lang = LanguageUndefined;
 		const props = {
-			chain: this.chainsService.getChain(lang),
+			lang,
+			langs: this.chainsService.getAllChains().map((c) => c.id),
 		};
-		this.render(res, 'pages/chat', props);
-	} */
+		const options = {
+			userInfo: session.userInfo,
+		};
+		return await render('pages/chat', props, options);
+	}
 }
