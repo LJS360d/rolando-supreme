@@ -1,18 +1,18 @@
 import { ApplicationCommandData, Guild } from 'discord.js';
 import { ClientEvent, Handler, HandlerType, Logger } from 'fonzi2';
-import { ChainsService } from '../domain/services/chains.service';
+import { GuildsService } from '../domain/services/guilds.service';
+import { env } from '../env';
 import { RolandoServer } from '../server/rolando.server';
 import { GUILD_CREATE_MSG } from '../static/text';
-import { env } from '../env';
-import { GuildsService } from '../domain/services/guilds.service';
+import { ChainsService } from '../domain/services/chains.service';
 
 export class EventsHandler extends Handler {
 	public readonly type = HandlerType.clientEvent;
 
 	constructor(
 		private commands: ApplicationCommandData[],
-		private chainsService: ChainsService,
-		private guildsService: GuildsService
+		private guildsService: GuildsService,
+		private chainsService: ChainsService
 	) {
 		super();
 	}
@@ -26,7 +26,7 @@ export class EventsHandler extends Handler {
 			await this.client?.application?.commands.set(this.commands);
 			load.success('Reloaded application (/) commands.');
 			new RolandoServer(
-				this.client!,
+				this.client,
 				{
 					port: env.PORT,
 					inviteLink: env.INVITE_LINK,

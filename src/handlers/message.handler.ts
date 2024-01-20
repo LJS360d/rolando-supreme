@@ -19,14 +19,12 @@ export class MessageHandler extends Handler {
 		const { author, guild, content } = message;
 
 		if (author.id === this.client?.user?.id) return;
-		const lang = await this.guildsService.getGuildLanguage(guild.id);
 		if (content.length > 3) {
 			// * Learning from message
-			this.chainService.updateChain(lang, content);
+			this.chainService.updateChainByGuild(guild.id, content);
 		}
 
 		const chain = await this.chainService.getChainForGuild(guild.id);
-
 		const guildDoc = await this.guildsService.getOne(message.guild);
 		const mention = message.mentions.users.some((value) => value === this.client?.user);
 

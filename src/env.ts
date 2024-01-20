@@ -16,12 +16,13 @@ export const env = {
 	// * the server's port (default: 8080)
 	PORT: Number(process.env['PORT']) || 8080,
 	// * the current environment (default: development)
-	NODE_ENV: process.env['NODE_ENV'] || 'development',
+	NODE_ENV: (process.env['NODE_ENV'] || 'development') as NodeEnv,
 	// ! MongoDB configuration
 	MONGODB_ENABLED: !!process.env['MONGODB_ENABLED'] || true,
 	MONGODB_URI: process.env['MONGODB_URI']!,
 } as const;
 
+type NodeEnv = 'development' | 'production' | 'test';
 export function validateEnv(Env = env, warn = true) {
 	let invalidEnv = false;
 	const requiredProps: (keyof typeof Env)[] = [

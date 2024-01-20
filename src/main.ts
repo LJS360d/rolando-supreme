@@ -10,20 +10,25 @@ import { CommandsHandler } from './handlers/commands.handler';
 import { EventsHandler } from './handlers/events.handler';
 import { MessageHandler } from './handlers/message.handler';
 import options from './options';
+import Container from 'typedi';
 async function main() {
 	validateEnv();
 	const db = await connectMongo(env.MONGODB_URI, 'rolando-supreme');
 
 	const guildsRepository = new GuildsRepository();
+	Container.set(GuildsRepository, guildsRepository);
 	const textDataRepository = new TextDataRepository();
-	const chainService = new ChainsService(guildsRepository, textDataRepository);
+	Container.set(TextDataRepository, textDataRepository);
+	const chainsService = new ChainsService(guildsRepository, textDataRepository);
+	Container.set(ChainsService, chainsService);
 	const guildsService = new GuildsService(guildsRepository);
+	Container.set(GuildsService, guildsService);
 
 	new Fonzi2Client(env.TOKEN, options, [
-		new CommandsHandler(chainService, guildsService),
-		new ButtonsHandler(chainService, guildsService),
-		new MessageHandler(chainService, guildsService),
-		new EventsHandler(getRegisteredCommands(), chainService, guildsService),
+		new CommandsHandler(chainsService, guildsService),
+		new ButtonsHandler(chainsService, guildsService),
+		new MessageHandler(chainsService, guildsService),
+		new EventsHandler(getRegisteredCommands(), guildsService, chainsService),
 	]);
 
 	process.on('uncaughtException', (err: any) => {

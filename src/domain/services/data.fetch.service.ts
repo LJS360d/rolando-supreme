@@ -53,7 +53,7 @@ export class DataFetchService {
 					if (firstFetch) firstFetch = false;
 					const textMessages = messageBatch.map((msg) => msg.content);
 					messages.push.apply(messages, textMessages);
-					this.chainService.updateChain(channel.guildId, textMessages);
+					void this.chainService.updateChainByGuild(channel.guildId, textMessages);
 					load.update(`Fetched #green${messages.length}$ messages in #${channel.name}`);
 				} catch (error) {
 					errorCount++;

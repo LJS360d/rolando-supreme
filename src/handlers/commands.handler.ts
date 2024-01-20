@@ -7,11 +7,7 @@ import {
 import { ActionRow, Buttons, Command, Handler, HandlerType } from 'fonzi2';
 import { ChainsService } from '../domain/services/chains.service';
 import { GuildsService } from '../domain/services/guilds.service';
-import {
-	Language,
-	LanguageChoices,
-	LanguageKeysIterator,
-} from '../domain/types/languages';
+import { LanguageChoices } from '../static/languages';
 import { env } from '../env';
 import { TRAIN_REPLY } from '../static/text';
 import { getRandom } from '../utils/random.utils';

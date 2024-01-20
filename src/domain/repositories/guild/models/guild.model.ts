@@ -1,5 +1,5 @@
 import { Schema, model, now } from 'mongoose';
-import { Language } from '../../../types/languages';
+import { Language } from '../../../../static/languages';
 import { BaseDocument } from '../../common/base.document.model';
 
 export interface GuildDocument extends BaseDocument {

@@ -28,10 +28,10 @@ export class ButtonsHandler extends Handler {
 		await interaction.channel?.send({
 			content: FETCH_CONFIRM_MSG(interaction.user.id),
 		});
-		void this.guildsService.update(interaction.guild, undefined, true);
+		void this.guildsService.update(interaction.guildId, { contributed: true });
 		const startTime = Date.now();
 		const messages = await new DataFetchService(
-			this.client!,
+			this.client,
 			this.chainService
 		).fetchAllGuildMessages(interaction.guild);
 		await interaction.channel?.send({

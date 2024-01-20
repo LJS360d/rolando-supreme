@@ -3,7 +3,7 @@ import { Logger } from 'fonzi2';
 import { UpdateQuery } from 'mongoose';
 import { GuildsRepository } from '../repositories/guild/guilds.repository';
 import { GuildDocument } from '../repositories/guild/models/guild.model';
-import { Language, LanguageUndefined } from '../types/languages';
+import { Language, LanguageUndefined } from '../../static/languages';
 
 export class GuildsService {
 	constructor(private guildsRepository: GuildsRepository) {}

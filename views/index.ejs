@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" data-theme=<%= theme  %>>
 <!-- <head> -->
-<%- include("./partials/head", { title }) -%>
+<%- include("common/head", { title }) -%>
 <!-- </head> -->
 
 <body>
   <!-- <header> -->
-  <%- include("./components/sidebar", { title }) -%>
+  <%- include("common/sidebar", { title }) -%>
   <!-- </header> -->
   <main class="p-4">
     <%- include(component, props) -%>

@@ -1,4 +1,4 @@
-import { LanguageUndefined } from '../../types/languages';
+import { LanguageUndefined } from '../../../static/languages';
 import { BaseRepository } from '../common/base.repository';
 import { GuildDocument, GuildModel } from './models/guild.model';
 

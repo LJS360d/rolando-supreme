@@ -2,7 +2,7 @@ import { Logger } from 'fonzi2';
 import { MarkovChain } from '../model/markov.chain';
 import { GuildsRepository } from '../repositories/guild/guilds.repository';
 import { TextDataRepository } from '../repositories/fs-storage/text-data.repository';
-import { LanguageUndefined } from '../types/languages';
+import { LanguageUndefined } from '../../static/languages';
 
 export class ChainsService {
 	public readonly chainsMap: Map<string, MarkovChain> = new Map();
@@ -37,35 +37,49 @@ export class ChainsService {
 		return chain;
 	}
 
-	updateChain(lang: string, text: string | string[]) {
-		const chain = this.getChain(lang);
+	private updateChain(chain: MarkovChain, text: string | string[]) {
 		if (!chain) return 0;
 		if (typeof text === 'string') {
 			chain.updateState(text);
-			this.textDataRepository.saveTextData(lang, text);
+			this.textDataRepository.saveTextData(chain.id, text);
 			return 1;
 		}
 		chain.provideData(text);
-		this.textDataRepository.saveTextData(lang, text);
+		this.textDataRepository.saveTextData(chain.id, text);
 		return text.length;
 	}
 
+	async updateChainByGuild(guildId: string, text: string | string[]) {
+		const chain = await this.getChainForGuild(guildId);
+		return this.updateChain(chain, text);
+	}
+
+	async updateChainByLang(lang: string, text: string | string[]) {
+		const chain = this.getChain(lang);
+		return this.updateChain(chain, text);
+	}
+
 	async removeData(lang: string, text: string) {
-		const chain = this.chainsMap.get(lang);
+		const chain = this.getChain(lang);
 		if (!chain) return 0;
 		chain.delete(text);
 		this.textDataRepository.deleteTextData(lang, text);
 		return 1;
 	}
 
-	loadChains() {
+	private loadChains() {
 		const load = Logger.loading('Loading Chains...');
-		for (const lang of this.textDataRepository.getStorageRefs()) {
-			this.createChain(lang);
+		try {
+			const storageRefs = this.textDataRepository.getStorageRefs();
+			for (const lang of storageRefs) {
+				this.createChain(lang);
+			}
+			load.success(`Loaded ${storageRefs.length} chains`);
+			this.chainsMap.forEach((chain) => {
+				Logger.info(`Chain '${chain.id}' size: #green${chain.size}$`);
+			});
+		} catch (error) {
+			load.fail('Failed loading chains');
 		}
-		load.success(`Loaded ${this.textDataRepository.getStorageRefs().length} chains`);
-		this.chainsMap.forEach((chain) => {
-			Logger.info(`Chain '${chain.id}' size: #green${chain.size}$`);
-		});
 	}
 }
