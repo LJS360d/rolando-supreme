@@ -1,18 +1,23 @@
-import { Controller, Get, QueryParam } from 'routing-controllers';
-import { Service } from 'typedi';
+import { Application, Request, Response } from 'express';
 import { ChainsService } from '../../domain/services/chains.service';
-import { hxRender, render } from '../render';
+import { Language } from '../../static/languages';
+import { hxRender } from '../render';
 
-@Controller('/hx')
 export class HxController {
-	constructor(@Service() private chainService: ChainsService) {}
+	constructor(
+		private app: Application,
+		private chainService: ChainsService
+	) {
+		this.app.get('/hx/message', this.message.bind(this));
+	}
 
-	@Get('/message')
-	async message(@QueryParam('lang') lang: string) {
+	async message(req: Request<any, any, any, { lang: Language }>, res: Response) {
+		const { lang } = req.query;
 		const responseMsg = this.chainService.getChain(lang).talk(200);
 		const props = {
 			response: responseMsg,
 		};
-		return hxRender('message', props);
+		hxRender(res, 'message', props);
+		return;
 	}
 }

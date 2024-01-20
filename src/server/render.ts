@@ -3,6 +3,7 @@ import { env } from '../env';
 import { ThemesIterator } from '../static/themes';
 import { RoutesIterator } from '../static/routes';
 import { Props, RenderOptions } from './types/render-options';
+import { Response } from 'express';
 
 export const baseRenderOptions: RenderOptions = {
 	themes: ThemesIterator,
@@ -13,18 +14,21 @@ export const baseRenderOptions: RenderOptions = {
 };
 
 export async function render(
+	res: Response,
 	component: string,
 	props: Props,
 	options?: Partial<RenderOptions>
 ) {
 	options = { ...baseRenderOptions, ...options };
-	return await renderFile('views/index.ejs', {
+	const content = await renderFile('views/index.ejs', {
 		component, // ! Used for <%- include(component, props) -%>
 		props,
 		...options,
 	});
+	res.send(content);
 }
 
-export async function hxRender(component: string, props: Props) {
-	return await renderFile(`views/hx/${component}.ejs`, props);
+export async function hxRender(res: Response, component: string, props: Props) {
+	const content = await renderFile(`views/hx/${component}.ejs`, props);
+	res.send(content);
 }

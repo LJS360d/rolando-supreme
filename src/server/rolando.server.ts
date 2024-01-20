@@ -2,17 +2,12 @@ import { Client } from 'discord.js';
 import express, { Request, Response } from 'express';
 import { Fonzi2Server, Fonzi2ServerData } from 'fonzi2';
 import { resolve } from 'path';
-import 'reflect-metadata';
-import { useContainer, useExpressServer } from 'routing-controllers';
-import { Container } from 'typedi';
 import { ChainsService } from '../domain/services/chains.service';
-import { env } from '../env';
 import { ActionsController } from './controllers/actions.controller';
 import { HxController } from './controllers/hx.controller';
 import { ViewsController } from './controllers/views.controller';
 import { baseRenderOptions } from './render';
 import { Props, RenderOptions } from './types/render-options';
-import { SessionAuthGuard } from './guards/session.auth.guard';
 
 export class RolandoServer extends Fonzi2Server {
 	constructor(
@@ -29,14 +24,9 @@ export class RolandoServer extends Fonzi2Server {
 	}
 
 	override async start() {
-		Container.set(SessionAuthGuard, new SessionAuthGuard());
-		useContainer(Container);
-		useExpressServer(this.app, {
-			controllers: this.getRegisteredControllers(),
-			cors: true,
-			authorizationChecker: SessionAuthGuard.checkAuth,
-			development: env.NODE_ENV === 'development',
-		});
+		new ActionsController(this.app, this.chainsService);
+		new HxController(this.app, this.chainsService);
+		new ViewsController(this.app, this.chainsService);
 		super.start();
 	}
 
@@ -59,10 +49,6 @@ export class RolandoServer extends Fonzi2Server {
 		};
 		this.render(res, 'pages/dashboard', props, options);
 		return;
-	}
-
-	private getRegisteredControllers() {
-		return [ActionsController, ViewsController, HxController];
 	}
 
 	// ? for default routes override

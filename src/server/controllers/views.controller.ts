@@ -1,32 +1,31 @@
-import { DiscordUserInfo } from 'fonzi2/dist/types/discord.user.info';
-import {
-	Authorized,
-	Controller,
-	Get,
-	Param,
-	QueryParam,
-	Session,
-} from 'routing-controllers';
-import { Service } from 'typedi';
+import { Application, Request, Response } from 'express';
 import { ChainsService } from '../../domain/services/chains.service';
-import { Language, LanguageUndefined, isLanguage } from '../../static/languages';
+import { Language } from '../../static/languages';
 import { Media } from '../../static/media';
 import { render } from '../render';
 
-@Controller()
 export class ViewsController {
-	constructor(@Service() private chainsService: ChainsService) {}
-
-	@Get('/media/:type')
-	async media(
-		@Session() session: { userInfo?: DiscordUserInfo },
-		@Param('type') type?: string,
-		@QueryParam('lang') lang?: string,
-		@QueryParam('start') start?: number | null,
-		@QueryParam('end') end?: number | null
+	constructor(
+		private app: Application,
+		private chainsService: ChainsService
 	) {
+		this.app.get('/media/:type', this.media.bind(this));
+		this.app.get('/chat/:lang', this.chat.bind(this));
+	}
+
+	async media(
+		req: Request<
+			{ type: Media },
+			any,
+			any,
+			{ lang: Language; start: number; end: number }
+		>,
+		res: Response
+	) {
+		const userInfo = req.session!['userInfo'];
+		let { type } = req.params;
+		let { lang, start, end } = req.query;
 		lang ??= Language.english;
-		if (!isLanguage(lang)) lang = LanguageUndefined;
 		type ??= Media.Images;
 		start ??= 0;
 		end ??= 80;
@@ -40,25 +39,25 @@ export class ViewsController {
 			langs: this.chainsService.getAllChains().map((c) => c.id),
 		};
 		const options = {
-			userInfo: session.userInfo,
+			userInfo,
 		};
-		return await render('pages/media', props, options);
+		return await render(res, 'pages/media', props, options);
 	}
 
-	@Get('/chat/:lang')
-	@Authorized()
-	async chat(
-		@Session() session: { userInfo?: DiscordUserInfo },
-		@Param('lang') lang: string
-	) {
-		if (!isLanguage(lang)) lang = LanguageUndefined;
+	async chat(req: Request<{ lang: Language }>, res: Response) {
+		const userInfo = req.session!['userInfo'];
+		if (!userInfo) {
+			res.redirect('/unauthorized');
+			return;
+		}
+		const { lang } = req.params;
 		const props = {
 			lang,
 			langs: this.chainsService.getAllChains().map((c) => c.id),
 		};
 		const options = {
-			userInfo: session.userInfo,
+			userInfo,
 		};
-		return await render('pages/chat', props, options);
+		return await render(res, 'pages/chat', props, options);
 	}
 }

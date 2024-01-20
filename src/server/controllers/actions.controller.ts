@@ -1,26 +1,27 @@
-import {
-	Authorized,
-	Delete,
-	HttpCode,
-	JsonController,
-	Param,
-	QueryParam,
-} from 'routing-controllers';
-import { Service } from 'typedi';
+import { Application, Request, Response } from 'express';
 import { ChainsService } from '../../domain/services/chains.service';
-import { Language, LanguageUndefined, isLanguage } from '../../static/languages';
+import { Language } from '../../static/languages';
 
-@JsonController()
 export class ActionsController {
-	constructor(@Service() private chainsService: ChainsService) {}
+	constructor(
+		private app: Application,
+		private chainsService: ChainsService
+	) {
+		this.app.delete('/data/:lang', this.removeData.bind(this));
+	}
 
-	@Delete('/data/:lang')
-	@HttpCode(204)
-	@Authorized()
-	async removeData(@Param('lang') lang: string, @QueryParam('text') text: string) {
-		lang ??= Language.english;
-		if (!isLanguage(lang)) lang = LanguageUndefined;
+	async removeData(
+		req: Request<{ lang: Language }, any, any, { text: string }>,
+		res: Response
+	) {
+		const { lang } = req.params;
+		const { text } = req.query;
+		if (!text || !lang) {
+			res.status(400).send('Missing parameters');
+			return;
+		}
 		this.chainsService.removeData(lang, text);
-		return null;
+		res.sendStatus(204);
+		return;
 	}
 }
